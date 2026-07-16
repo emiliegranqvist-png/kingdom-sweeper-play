@@ -273,6 +273,11 @@
   .msg.slay{color:var(--gold); font-style:normal; font-family:'Cinzel',serif; letter-spacing:.05em;}
   .msg b{color:var(--ink);}
   .controls{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; justify-content:center;}
+  /* the prologue is wordless: no message bar, no legend, no tool chrome — the board teaches */
+  #game.tutorial .msg, #game.tutorial .legend, #game.tutorial .tools,
+  #game.tutorial #toggleSword, #game.tutorial #guideBtn, #game.tutorial #wizardType{display:none;}
+  /* a proven goblin invites the blade: targeting cursor on guidance-marked tiles (all modes) */
+  .cell.gob-sure{cursor:crosshair;}
   button.btn{font-family:'Cinzel',serif; letter-spacing:.08em; background:linear-gradient(#2a4a44,#1d3b36);
     color:var(--ink); border:1px solid #3a6058; border-radius:9px; padding:9px 18px; cursor:pointer; font-size:13px; transition:filter .1s;}
   button.btn:hover{filter:brightness(1.15);}
@@ -374,6 +379,11 @@
     <h1>Choose Your Path</h1>
     <div class="menu-sub">However you take the field, every board is solvable by pure logic.</div>
     <div class="levels">
+      <div class="lvl-card" id="modePrologue">
+        <div class="lvl-icon"><span style="font-size:46px;">🌾</span></div>
+        <div class="lvl-name">Prologue</div>
+        <div class="lvl-blurb">Dawn at the village, goblins in the hay. Learn the sweeper's trade the only way it is learned — by doing. Not a word spoken.</div>
+      </div>
       <div class="lvl-card" id="modeCampaign">
         <div class="lvl-icon"><span style="font-size:46px;">⚔️</span></div>
         <div class="lvl-name">Campaign</div>
@@ -1094,6 +1104,29 @@ const DEFAULT_P={
     'train-champion':{desc:'two dragons and a wizard rule the gauntlet', dragons:2, wizard:true, fire:1, sword:1},
   };
 
+  // ---------- the prologue: a wordless tutorial in three fields ----------
+  // Design rules (Emilie): no text, no pausing, no pointing — the board itself teaches,
+  // and the player is the one who figures it out. So: chrome (msg bar, legend, tools) is
+  // hidden, guidance is forced on and becomes the silent teacher (glinting eyes, golden
+  // numbers), death re-raises the same field after a beat, and victory flows straight into
+  // the next field. Absolute basics only — scout, read the numbers, deal with the goblins,
+  // clear the field. Everything runs through the normal generation path: no-guess as always.
+  const TUTORIAL=[
+    {id:'tut-hayfield', name:'The Hayfield', difficulty:'Prologue', tutorial:true,
+     blurb:'Dawn. Goblin scouts in the hay.',
+     layout:'forest', cols:8, rows:6, mines:5, fire:0, sword:0, dragon:false, wizard:false, chest:false,
+     fieldLabel:'THE HAYFIELD', castleLabel:''},
+    {id:'tut-orchard', name:'The Orchard', difficulty:'Prologue', tutorial:true,
+     blurb:'They fell back among the trees.',
+     layout:'forest', cols:10, rows:7, mines:11, fire:0, sword:0, dragon:false, wizard:false, chest:false,
+     fieldLabel:'THE ORCHARD', castleLabel:''},
+    {id:'tut-gate', name:'The Village Gate', difficulty:'Prologue', tutorial:true,
+     blurb:'The last of them, at the gate itself.',
+     layout:'forest', cols:12, rows:8, mines:17, fire:0, sword:0, dragon:false, wizard:false, chest:false,
+     fieldLabel:'THE VILLAGE GATE', castleLabel:'',
+     flavor:'The gate holds, and the village wakes unharmed. Take up your banner — the realm is calling.'},
+  ];
+
   // ---- no-guess solver: solveTrace returns {solved, st}; exempt = cells the solver ignores entirely (e.g. the castle keep) ----
   function solvableNoGuess(mineArr, adjArr, openSet, hiddenClues, exempt){ return solveTrace(mineArr, adjArr, openSet, hiddenClues, exempt).solved; }
   function solveTrace(mineArr, adjArr, openSet, hiddenClues, exempt){
@@ -1673,7 +1706,9 @@ const DEFAULT_P={
     setTimeout(showVictory,650);}
   function loseAt(i,msg){dead=true;KSAudio.sfx.boom();KSAudio.music.stop();revealed[i]=true;for(let k=0;k<N;k++)if(mines[k]&&!isBoss(k))revealed[k]=true;render();
     cellEl(Math.floor(i/COLS),i%COLS).classList.add('mine-hit');renderSig[i]=-1;
-    setMsg(msg||'A goblin ambush overruns your line. The realm falls. ☠️ — try again or pick another realm.','lose');}
+    setMsg(msg||'A goblin ambush overruns your line. The realm falls. ☠️ — try again or pick another realm.','lose');
+    if(tutIndex>=0){const lvl=currentLevel; // prologue: show the ambush, then re-raise the field — instant retry, no pause
+      setTimeout(()=>{if(tutIndex>=0&&currentLevel===lvl&&dead&&!won&&!document.getElementById('game').hidden)newGame();},1600);}}
 
   function killBoss(boss){if(!boss||!boss.alive)return false;
     let hasFree=false;
@@ -1872,7 +1907,8 @@ const DEFAULT_P={
   const tCellAt=(x,y)=>{const el=document.elementFromPoint&&document.elementFromPoint(x,y);return el&&el.closest?el.closest('.cell'):null;};
   function tClearMarks(){tArmed=-1;for(const el of boardEl.children)el.classList.remove('drag-tgt');}
   function tReset(){tDown=false;tOrigin=-1;tDragFromNum=false;tMoved=false;tPanning=false;tPanLast=null;tStartXY=null;}
-  function tHint(){if(tHinted)return;tHinted=true;const m=document.getElementById('msg');
+  function tHint(){if(tutIndex>=0)return; /* the prologue is wordless — save the one-time legend for a real realm */
+    if(tHinted)return;tHinted=true;const m=document.getElementById('msg');
     if(m)m.innerHTML+='<br><span style="opacity:.75">Touch: <b>tap</b> a tile to strike a goblin ⚔️ · <b>drag from a number</b> onto a tile to scout it 🗺️ · <b>pinch</b> to zoom, drag elsewhere to pan</span>';}
   const tHost=()=>vpEl()||boardEl;
   function tBindTouch(){const vp=tHost();
@@ -1962,7 +1998,7 @@ const DEFAULT_P={
   document.getElementById('wizardType').addEventListener('click',()=>{
     wizPick=(wizPick+1)%3;forcedWizardType=WIZ_CYCLE[wizPick];
     document.getElementById('wizardType').textContent=wizLabel(forcedWizardType);newGame();});
-  document.getElementById('backMenu').addEventListener('click',()=>{ if(edReturn)showEditor(); else if(seReturnFn)seReturnFn(); else if(trainReturn)showTraining(); else showLevelSelect(); });
+  document.getElementById('backMenu').addEventListener('click',()=>{ if(edReturn)showEditor(); else if(seReturnFn)seReturnFn(); else if(trainReturn)showTraining(); else if(tutIndex>=0)showModeSelect(); else showLevelSelect(); });
 
   // ---------- screens & menu ----------
   function buildMenu(){const wrap=document.getElementById('levels');wrap.innerHTML='';
@@ -1984,16 +2020,21 @@ const DEFAULT_P={
   function hideAllScreens(){['title','modeselect','levelselect','training','game','victory','editor','sndedit'].forEach(id=>{const el=document.getElementById(id);if(el)el.hidden=true;});
     updateRotateGate();}
   function showTitle(){KSAudio.music.stop();hideAllScreens();document.getElementById('title').hidden=false;}
-  function showModeSelect(){KSAudio.music.stop();edReturn=false;seReturnFn=null;trainReturn=false;hideAllScreens();document.getElementById('modeselect').hidden=false;}
-  function showLevelSelect(){KSAudio.music.stop();edReturn=false;seReturnFn=null;trainReturn=false;hideAllScreens();document.getElementById('levelselect').hidden=false;}
-  function showTraining(){KSAudio.music.stop();edReturn=false;seReturnFn=null;trainReturn=false;buildTrainingMenu();hideAllScreens();document.getElementById('training').hidden=false;}
+  function showModeSelect(){KSAudio.music.stop();edReturn=false;seReturnFn=null;trainReturn=false;tutIndex=-1;hideAllScreens();document.getElementById('modeselect').hidden=false;}
+  function showLevelSelect(){KSAudio.music.stop();edReturn=false;seReturnFn=null;trainReturn=false;tutIndex=-1;hideAllScreens();document.getElementById('levelselect').hidden=false;}
+  function showTraining(){KSAudio.music.stop();edReturn=false;seReturnFn=null;trainReturn=false;tutIndex=-1;buildTrainingMenu();hideAllScreens();document.getElementById('training').hidden=false;}
   let edReturn=false;   // test-playing from the dev editor: back/victory return there, not the menu (always false in player build)
   let seReturnFn=null;  // test-playing from the sound forge: back/victory return there (always null in player build)
   let trainReturn=false;   // playing a training arena: back/victory return to the training screen
   let trainEnemies=false;  // Enemies: On/Off for the training grounds
+  let tutIndex=-1;         // active prologue field (index into TUTORIAL), -1 = not in the tutorial
   let suppressVictory=false;   // dev bot-test runs win games in the background; don't swap screens
   function showVictory(){
     if(suppressVictory)return;
+    if(tutIndex>=0&&tutIndex<TUTORIAL.length-1){ // mid-prologue: no card — the fanfare plays, then the next field rises
+      const next=tutIndex+1,lvl=currentLevel;
+      setTimeout(()=>{if(tutIndex>=0&&currentLevel===lvl&&won&&!document.getElementById('game').hidden)startTutorial(next);},900);
+      return;}
     document.getElementById('vicLevel').textContent=currentLevel.name+' — cleared';
     const flavor={Easy:'The scouts are routed and the glade falls quiet. The chest is yours.',
       Medium:'The warband breaks and the dragon falls. The hills are clear.',
@@ -2002,7 +2043,7 @@ const DEFAULT_P={
       Squire:'The yard is swept clean and the drillmaster nods — once. On to a wider field.',
       Knight:'Forty goblins undone by logic alone. The field stands clear.',
       Champion:'The great gauntlet falls, end to end, without a single guess. Few can claim the same.'};
-    document.getElementById('vicFlavor').textContent=flavor[currentLevel.difficulty]||'The realm is cleared.';
+    document.getElementById('vicFlavor').textContent=currentLevel.flavor||flavor[currentLevel.difficulty]||'The realm is cleared.';
     document.getElementById('victory').hidden=false;
   }
   function applyLevelState(lv){   // pure level state — no DOM; also used by the dev-build validator
@@ -2020,7 +2061,15 @@ const DEFAULT_P={
     hiddenVariant=new Array(N).fill('hide1');
   }
   function startLevel(i){ edReturn=false; trainReturn=false; startLevelObj(LEVELS[i]); }
+  function startTutorial(i){ // the prologue chain: field i of TUTORIAL, wordless chrome, guidance as the teacher
+    edReturn=false;seReturnFn=null;trainReturn=false;tutIndex=i;
+    if(!guideOn){guideOn=true;document.getElementById('guideBtn').textContent='Guidance: On';}
+    startLevelObj(TUTORIAL[i]);
+  }
   function startLevelObj(lv){
+    if(!lv.tutorial)tutIndex=-1;
+    document.getElementById('game').classList.toggle('tutorial',!!lv.tutorial);
+    document.getElementById('newGame').textContent=lv.tutorial?'New Field':'New Realm';
     applyLevelState(lv);
     boardEl.style.setProperty('--asset', currentLevel.overlayImage?('url("'+currentLevel.overlayImage+'")'):'none');
     hideAllScreens();document.getElementById('game').hidden=false;
@@ -2040,6 +2089,7 @@ const DEFAULT_P={
   document.getElementById('playBtn').addEventListener('click',showModeSelect);
   document.getElementById('modeCampaign').addEventListener('click',showLevelSelect);
   document.getElementById('modeTraining').addEventListener('click',showTraining);
+  document.getElementById('modePrologue').addEventListener('click',()=>startTutorial(0));
   document.getElementById('modeToTitle').addEventListener('click',showTitle);
   document.getElementById('toTitle').addEventListener('click',showModeSelect);
   document.getElementById('trainBack').addEventListener('click',showModeSelect);
