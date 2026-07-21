@@ -343,6 +343,84 @@
   .vic-flavor{font-style:italic; color:var(--ink-dim); margin:12px 0 22px; line-height:1.6;}
 
   
+  /* ---------- realm forge (level editor) — DEV BUILD ONLY ---------- */
+  .dev-ribbon{position:fixed; top:14px; left:-38px; z-index:99; transform:rotate(-45deg);
+    background:var(--blood); color:#fff; font-family:'Cinzel',serif; font-size:11px; letter-spacing:.2em;
+    padding:4px 44px; box-shadow:0 2px 8px var(--shadow); pointer-events:none;}
+  #editor{display:flex; flex-direction:column; align-items:center; gap:8px; width:100%; max-width:1180px;}
+  #editor h1{font-size:clamp(24px,4vw,36px); margin-top:12px;}
+  .ed-main{display:flex; gap:18px; flex-wrap:wrap; justify-content:center; align-items:flex-start; width:100%;}
+  .ed-left{display:flex; flex-direction:column; gap:8px; align-items:center;}
+  .ed-palette{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; max-width:680px;}
+  .ed-brush{font-family:'Cinzel',serif; font-size:12px; letter-spacing:.05em; padding:5px 10px; border-radius:8px;
+    border:1px solid #2e524c; background:linear-gradient(#1f3a36,#16302c); color:var(--ink-dim); cursor:pointer; user-select:none;}
+  .ed-brush:hover{filter:brightness(1.2);}
+  .ed-brush.active{border-color:var(--gold); color:var(--gold); box-shadow:0 0 8px #d9a44133;}
+  #edGrid{display:grid; gap:2px; padding:8px; background:var(--frame); border-radius:10px; box-shadow:0 8px 22px var(--shadow); user-select:none;}
+  .ed-gridwrap{position:relative;}
+  #edOvPrev{position:absolute; inset:8px; pointer-events:none; background-repeat:no-repeat; border-radius:6px; z-index:3;}
+  .ed-cell{position:relative; border-radius:3px; background:var(--field); cursor:crosshair; display:flex; align-items:center; justify-content:center; font-size:13px; line-height:1;}
+  .ed-cell.a-stone{background:#59616d;} .ed-cell.a-char{background:#3a2723;}
+  .ed-cell.t-water{background:#2c5a7a;} .ed-cell.t-rock{background:#6b625a;} .ed-cell.t-bridge{background:#a5814f;}
+  .ed-cell.s-castle{background:#707480;} .ed-cell.s-keep{background:#5a4048; box-shadow:inset 0 0 0 2px #b7402f88;}
+  .ed-cell.foothold{box-shadow:inset 0 0 0 2px #9ed18a;}
+  .ed-sec{font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-dim); border-top:1px solid #2e524c; padding-top:8px; margin-top:2px;}
+  .ed-libwrap{display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:center; width:100%; max-width:1100px;
+    background:linear-gradient(#1c3733,#132925); border:1px solid #2e524c; border-radius:12px; padding:8px 12px;}
+  .ed-lib-label{font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-dim); flex:none;}
+  #edLibBar{display:flex; gap:6px; flex-wrap:wrap; justify-content:center;}
+  .ed-chip{display:flex; align-items:center; gap:5px; font-size:12px; padding:4px 10px; border-radius:999px;
+    border:1px solid #2e524c; background:#16302c; color:var(--ink-dim); cursor:pointer; user-select:none;}
+  .ed-chip:hover{filter:brightness(1.25);}
+  .ed-chip.shipped{border-style:dashed;}
+  .ed-chip-x{color:#e79a8c; padding-left:2px;}
+  .ed-lib-empty{font-size:12px; font-style:italic; color:var(--ink-dim);}
+  .ed-libwrap .btn{font-size:12px; padding:6px 10px;}
+  .ed-hint{font-size:12px; color:var(--ink-dim); font-style:italic; max-width:680px; text-align:center;}
+  .ed-panel{display:flex; flex-direction:column; gap:8px; width:330px; background:linear-gradient(#1c3733,#132925);
+    border:1px solid #2e524c; border-radius:14px; padding:16px; box-shadow:0 8px 22px var(--shadow);
+    max-height:calc(100vh - 30px); overflow-y:auto; position:sticky; top:12px; scrollbar-width:thin;}
+  .ed-group{border:1px solid #2e524c; border-radius:10px; padding:4px 10px 10px; display:block;}
+  .ed-group[open]{padding-bottom:12px;}
+  .ed-group>summary{cursor:pointer; font-size:10px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--ink-dim); user-select:none; padding:6px 0;}
+  .ed-group>.ed-row{margin-top:8px;}
+  .ed-group .ed-subhead{font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-dim);
+    opacity:.75; border-top:1px dashed #2e524c; margin-top:12px; padding-top:8px;}
+  .ed-pal-label{width:100%; text-align:center; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-dim); margin-top:4px;}
+  .ed-pal-label.artonly{color:#c9a86a;}
+  #edFrPrev{position:absolute; pointer-events:none; background-size:100% 100%; background-repeat:no-repeat; z-index:4;}
+  .ed-row{display:flex; gap:8px; align-items:center;}
+  .ed-row label{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-dim); width:78px; flex:none;}
+  .ed-row input,.ed-row select,.ed-panel textarea{flex:1; min-width:0; background:#0f1f1c; color:var(--ink); border:1px solid #2e524c;
+    border-radius:6px; padding:5px 8px; font-family:'Spectral',serif; font-size:13px;}
+  .ed-row input[type=number]{width:64px; flex:none;}
+  .ed-panel textarea{resize:vertical; font-family:monospace; font-size:11px;}
+  .ed-btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;}
+  .ed-btns .btn{font-size:12px; padding:8px 12px;}
+  #edReport{font-size:12.5px; line-height:1.55; color:var(--ink-dim); white-space:pre-wrap; max-width:330px;}
+  #edReport b{color:var(--ink);} #edReport .ok{color:#9ed18a;} #edReport .bad{color:#e79a8c;} #edReport .warn{color:#e6c468;}
+  /* ---------- sound forge (audio editor) — DEV BUILD ONLY ---------- */
+  .se-main{display:grid; grid-template-columns:210px 1fr; gap:14px; max-width:860px; margin:0 auto; text-align:left;}
+  @media (max-width:640px){.se-main{grid-template-columns:1fr;}}
+  .se-list{display:flex; flex-direction:column; gap:5px;}
+  .se-list .grp{font-size:10px; letter-spacing:.25em; text-transform:uppercase; color:var(--ink-dim); margin:8px 0 2px;}
+  .se-list button{text-align:left; font-size:13px; padding:7px 10px;}
+  .se-list button.sel{border-color:var(--gold, #d9b25f); color:var(--gold, #d9b25f);}
+  .se-panel{border:1px solid var(--edge, #2e524c); border-radius:6px; padding:14px; min-height:300px;}
+  .se-panel h2{font-size:18px; margin:0 0 2px;}
+  .se-panel .se-desc{font-size:12.5px; color:var(--ink-dim); font-style:italic; margin-bottom:12px;}
+  .se-row{display:grid; grid-template-columns:140px 1fr 60px; gap:10px; align-items:center; margin-bottom:8px;}
+  .se-row label{font-size:13px;}
+  .se-row .val{font-size:12px; text-align:right; font-variant-numeric:tabular-nums; color:var(--ink-dim);}
+  .se-row .val.dirty{color:var(--gold, #d9b25f);}
+  .se-row input[type=range]{width:100%;}
+  .se-btns{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;}
+  .se-btns .btn{font-size:12px; padding:8px 12px;}
+  .se-io textarea{width:100%; height:100px; resize:vertical; font-family:monospace; font-size:11px; margin-top:6px;}
+  .se-note{font-size:12px; color:var(--ink-dim); font-style:italic; line-height:1.5; margin-top:4px;}
+  .se-sample{font-size:12px; color:var(--gold, #d9b25f); margin:0 0 8px;}
+  
 
   /* ---------- mobile (touch) ---------- */
   @media (pointer:coarse){
@@ -405,7 +483,7 @@
     </div>
     <div style="display:flex; gap:10px; margin-top:24px;">
       <button class="btn ghost" id="modeToTitle">← Title</button>
-      
+      <button class="btn ghost" id="toEditor">⚒ Realm Forge</button><button class="btn ghost" id="toSndEdit">🔊 Sound Forge</button>
     </div>
   </div>
 
@@ -478,6 +556,115 @@
     </div>
   </div>
 
+  
+  <div class="dev-ribbon">DEV BUILD</div>
+  <div id="editor" hidden>
+    <h1>⚒ Realm Forge</h1>
+    <div class="menu-sub">Paint the land, place the anchors, prove it fair, export the realm.</div>
+    <div class="ed-libwrap">
+      <span class="ed-lib-label">Library</span>
+      <div id="edLibBar"></div>
+      <button class="btn" id="edSaveBtn">💾 Save</button>
+      <button class="btn ghost" id="edSaveCopyBtn">⧉ Save copy</button>
+    </div>
+    <div class="ed-main">
+      <div class="ed-left">
+        <div class="ed-palette" id="edPalette"></div>
+        <div class="ed-gridwrap"><div id="edGrid"></div></div>
+        <div class="ed-hint">Left-click / drag paints the selected brush · right-click erases terrain, structure &amp; art ·
+          anchor brushes place a single marker (click its cell again to remove) · Keep tiles count as Castle automatically ·
+          Stone/Charred art is pure cosmetics — it never touches mechanics or the no-guess math.</div>
+      </div>
+      <div class="ed-panel">
+        <details class="ed-group" open><summary>Realm card — what players see before entering</summary>
+        <div class="ed-row"><label>Name</label><input id="edName" value="New Realm"></div>
+        <div class="ed-row"><label>Difficulty</label><select id="edDiff"><option>Easy</option><option selected>Medium</option><option>Hard</option><option>Impossible</option></select></div>
+        <div class="ed-row"><label>Blurb</label><textarea id="edBlurb" rows="2"></textarea></div>
+        </details>
+        <details class="ed-group" open><summary>Field &amp; foes — gameplay</summary>
+        <div class="ed-row"><label>Size</label><input type="number" id="edCols" value="14" min="6" max="24"> ×
+          <input type="number" id="edRows" value="10" min="6" max="24"></div>
+        <div class="ed-row"><label>Goblins</label><input type="number" id="edMines" value="24" min="1" max="120"></div>
+        <div class="ed-row"><label>Fire / Sword</label><input type="number" id="edFire" value="1" min="0" max="9"> /
+          <input type="number" id="edSword" value="1" min="0" max="9"></div>
+        <div class="ed-row"><label>Dragons</label><input type="number" id="edDragons" value="0" min="0" max="4"></div>
+        <div class="ed-row"><label>Wizard</label><select id="edWizard"><option value="none" selected>None</option><option value="random">Random</option><option value="counter">Counterspell</option><option value="fog">Fog</option></select></div>
+        <div class="ed-row"><label>Chest</label><input type="checkbox" id="edChest" style="flex:none;"></div>
+        </details>
+        <details class="ed-group" open><summary>Art — visuals only, never gameplay</summary>
+        <div class="ed-row"><label>Ground</label><select id="edGround"><option value="">Grass</option><option value="stone">Stone</option><option value="char">Charred</option></select></div>
+        <div class="ed-row"><label>Terrain</label><select id="edTerrK"><option value="auto">Auto</option><option value="water">Water</option><option value="rock">Rock</option></select></div>
+        <div class="ed-subhead">Tile textures — upload, name, then paint from the palette</div>
+        <div class="ed-row"><label>Texture</label><input type="file" id="edTexFile" accept="image/*"></div>
+        <div class="ed-row"><label>Name</label><input id="edTexName" placeholder="e.g. moss" maxlength="20"><button class="btn" id="edTexAdd">＋ Add</button></div>
+        <div class="ed-subhead">Overlay — one image over the whole field</div>
+        <div class="ed-row"><label>Overlay</label><select id="edOvPreset"><option value="none">None</option><option value="glade">Glade</option><option value="river">River</option><option value="keep">Keep</option><option value="castle">Castle</option><option value="volcano">Volcano</option><option value="custom">Custom…</option></select></div>
+        <div class="ed-row"><label>Upload</label><input type="file" id="edOvFile" accept="image/*"></div>
+        <div class="ed-row"><label>Op. hidden</label><input type="range" id="edOvHid" min="0" max="1" step="0.02" value="1"></div>
+        <div class="ed-row"><label>Op. cleared</label><input type="range" id="edOvClr" min="0" max="1" step="0.02" value="0.45"></div>
+        <div class="ed-row"><label>Scale</label><input type="range" id="edOvScale" min="0.5" max="2" step="0.01" value="1"></div>
+        <div class="ed-row"><label>Offset X</label><input type="range" id="edOvX" min="-0.5" max="0.5" step="0.01" value="0"></div>
+        <div class="ed-row"><label>Offset Y</label><input type="range" id="edOvY" min="-0.5" max="0.5" step="0.01" value="0"></div>
+        <div class="ed-row"><label>Over water</label><input type="checkbox" id="edOvFull" style="flex:none;"></div>
+        <div class="ed-subhead">Frame — decoration around the board</div>
+        <div class="ed-row"><label>Frame</label><input type="file" id="edFrFile" accept="image/*"><button class="btn ghost" id="edFrClear" title="Remove frame art">✕</button></div>
+        <div class="ed-row"><label>Scale</label><input type="range" id="edFrScale" min="0.8" max="1.8" step="0.01" value="1.15"></div>
+        <div class="ed-row"><label>Offset X</label><input type="range" id="edFrX" min="-0.3" max="0.3" step="0.01" value="0"></div>
+        <div class="ed-row"><label>Offset Y</label><input type="range" id="edFrY" min="-0.3" max="0.3" step="0.01" value="0"></div>
+        <div class="ed-row"><label>Opacity</label><input type="range" id="edFrOp" min="0" max="1" step="0.02" value="1"></div>
+        </details>
+        <details class="ed-group"><summary>Submit to repo</summary>
+        <div class="ed-row"><label>Token</label><input type="password" id="edGhTok" placeholder="GitHub token — memory only" autocomplete="off"></div>
+        <div class="ed-row"><label>Target</label><select id="edGhCat"><option value="campaign">Campaign</option><option value="training">Training</option></select></div>
+        <div class="ed-row"><button class="btn" id="edSubmitBtn" style="flex:1;">🚀 Submit realm</button></div>
+        </details>
+        <div class="ed-btns">
+          <button class="btn primary" id="edPlay">▶ Test Play</button>
+          <button class="btn" id="edValidate">✓ Validate</button>
+          <button class="btn" id="edBotBtn">🤖 Bot Test</button>
+          <button class="btn" id="edExport">Export JSON</button>
+          <button class="btn" id="edImport">Import JSON</button>
+          <button class="btn ghost" id="edClear">Clear</button>
+        </div>
+        <textarea id="edJson" rows="7" placeholder="Level JSON — paste one in (from an AI teammate or an exported realm) and hit Import, or hit Export to copy this realm out."></textarea>
+        <div id="edReport"></div>
+        <div style="border-top:1px solid #2e524c; margin-top:6px; padding-top:10px; display:flex; flex-direction:column; gap:8px;">
+          <div class="ed-row"><label>API key</label><input id="edKey" type="password" placeholder="sk-ant-… (in memory only, never saved)"></div>
+          <textarea id="edPrompt" rows="2" placeholder="Describe the realm — e.g. 'a swamp crossing, two dragons guarding a chest on an island'. With a realm loaded, this revises it instead."></textarea>
+          <button class="btn primary" id="edAIBtn">✨ Forge with AI</button>
+        </div>
+      </div>
+    </div>
+    <button class="btn ghost" id="edBack" style="margin-top:10px;">← Realms</button>
+  </div>
+
+  <div id="sndedit" hidden>
+    <h1>🔊 Sound Forge</h1>
+    <div class="menu-sub">Every sound is an editable recipe: reshape layers, design new sounds with AI, import real files, and hear it all in a live realm — then export the block into src/audio.js.</div>
+    <div class="se-main">
+      <div class="se-list" id="seList"></div>
+      <div>
+        <div class="se-panel" id="sePanel"></div>
+        <div class="se-io">
+          <div class="se-btns" style="margin-top:10px;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;">Test in <select id="seRealm"></select></label>
+            <button class="btn" id="seTestBtn">🗺 Play realm</button>
+            <button class="btn" id="seExport">Export params</button>
+            <button class="btn" id="seImport">Import params</button>
+            <button class="btn ghost" id="seResetAll">Reset all</button>
+          </div>
+          <textarea id="seJson" hidden spellcheck="false"></textarea>
+          <div class="se-note" id="seNote"></div>
+          <div style="border-top:1px solid var(--edge, #2e524c); margin-top:10px; padding-top:10px; display:flex; flex-direction:column; gap:8px;">
+            <div class="se-row" style="grid-template-columns:140px 1fr;"><label>API key</label><input id="seKey" type="password" placeholder="sk-ant-… (in memory only, never saved)"></div>
+            <textarea id="sePrompt" rows="2" style="width:100%; resize:vertical;" placeholder="Ask for anything: redesign the dragon from scratch, a new creaky-door sound called doorCreak, give the victory a choir feel."></textarea>
+            <button class="btn primary" id="seAIBtn">✨ Design with AI</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="btn ghost" id="seBack" style="margin-top:12px;">← Realms</button>
+  </div>
   
 
 <script>
@@ -2141,6 +2328,673 @@ const DEFAULT_P={
   }
 
   
+  // ---------- Realm Forge (level editor) — DEV BUILD ONLY (stripped from the player build) ----------
+  // The level format doubles as the AI authoring interface: an AI writes level JSON
+  // (spec: docs/LEVELS.md), you paste it in here, paint over it, Validate, Test Play, Export.
+  // Import/export round-trips unknown fields untouched (icon, overlayImage, keepDensity, lairSafe, ...)
+  // so advanced knobs survive even though the UI doesn't expose them.
+  const ED={cols:14,rows:10,terr:{},struct:{},foot:new Set(),anchors:{},raw:{},brush:'water',art:{},ovCustom:null,frCustom:null,texPending:null};
+  const ED_BRUSHES=[['erase','✖ Erase'],['water','🌊 Water'],['rock','⛰ Rock'],['bridge','🪵 Bridge'],
+    ['castle','🏰 Castle'],['keep','🛡 Keep'],['foothold','🦶 Foothold'],
+    ['stoneArt','🪨 Stone art'],['charArt','🔥 Charred art'],
+    ['chestAt','📦 Chest@'],['dragonAt','🐉 Dragon@'],['dragonNear','🐲 Dragon~'],['wizardNear','🧙 Wizard~']];
+  const ED_MARKS={chestAt:'📦',dragonAt:'🐉',dragonNear:'🐲',wizardNear:'🧙'};
+  const ED_ANCHOR_KEYS=['chestAt','dragonAt','dragonNear','wizardNear'];
+  const edEl=id=>document.getElementById(id);
+  const edKey=(r,c)=>r+','+c;
+  const edUnkey=k=>k.split(',').map(Number);
+  const edEsc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  let edDown=false;
+  function edShowMsg(html){edEl('edReport').innerHTML=html;}
+  let edBooted=false;
+  function showEditor(){hideAllScreens();edEl('editor').hidden=false;
+    if(!edBooted){edBooted=true;edRenderLib();
+      let auto=null;try{auto=localStorage.getItem(ED_AUTO);}catch(_){}
+      if(auto&&!Object.keys(ED.terr).length&&!Object.keys(ED.struct).length&&!Object.keys(ED.raw).length){
+        try{edEl('edJson').value=auto;edImport();edShowMsg('Restored your working realm from autosave. Clear starts fresh; the library keeps proper saves.');}catch(_){}}
+    }
+    edRenderGrid();}
+
+  function edPaint(r,c,erase){
+    const k=edKey(r,c), b=ED.brush;
+    if(erase||b==='erase'){delete ED.terr[k];delete ED.struct[k];ED.foot.delete(k);delete ED.art[k];
+      for(const a of ED_ANCHOR_KEYS){const p=ED.anchors[a];if(p&&p[0]===r&&p[1]===c)delete ED.anchors[a];}return;}
+    if(b==='water'||b==='rock'||b==='bridge')ED.terr[k]=b;
+    else if(b==='castle'||b==='keep')ED.struct[k]=b;
+    else if(b==='stoneArt'||b==='charArt')ED.art[k]=(b==='stoneArt'?'stone':'char');
+    else if(b.startsWith('tex:'))ED.art[k]=b;
+    else if(b==='foothold'){ED.foot.has(k)?ED.foot.delete(k):ED.foot.add(k);}
+    else {const cur=ED.anchors[b];if(cur&&cur[0]===r&&cur[1]===c)delete ED.anchors[b];else ED.anchors[b]=[r,c];}
+  }
+  function edRenderGrid(){
+    const g=edEl('edGrid');g.innerHTML='';
+    const px=Math.max(16,Math.min(30,Math.floor(660/ED.cols)));
+    g.style.gridTemplateColumns='repeat('+ED.cols+','+px+'px)';g.style.gridAutoRows=px+'px';
+    for(let r=0;r<ED.rows;r++)for(let c=0;c<ED.cols;c++){
+      const k=edKey(r,c),d=document.createElement('div');d.className='ed-cell';
+      if(ED.art[k]){
+        if(ED.art[k].startsWith('tex:')){const u=edTexLib()[ED.art[k].slice(4)];
+          if(u){d.style.backgroundImage='url("'+u+'")';d.style.backgroundSize='cover';}}
+        else d.classList.add('a-'+ED.art[k]);}
+      if(ED.terr[k])d.classList.add('t-'+ED.terr[k]);
+      if(ED.struct[k])d.classList.add('s-'+ED.struct[k]);
+      if(ED.foot.has(k))d.classList.add('foothold');
+      let m='';for(const a of ED_ANCHOR_KEYS){const p=ED.anchors[a];if(p&&p[0]===r&&p[1]===c)m+=ED_MARKS[a];}
+      d.textContent=m;d.title=r+','+c;
+      d.addEventListener('mousedown',e=>{e.preventDefault();edDown=true;edPaint(r,c,e.button===2);edRenderGrid();});
+      d.addEventListener('mouseover',()=>{if(!edDown)return;
+        if(['water','rock','bridge','castle','keep','erase','stoneArt','charArt'].includes(ED.brush)||ED.brush.startsWith('tex:')){edPaint(r,c,false);edRenderGrid();}});
+      d.addEventListener('contextmenu',e=>e.preventDefault());
+      g.appendChild(d);}
+    edOvPreview();edFrPreview();edAutosave();
+  }
+  document.addEventListener('mouseup',()=>edDown=false);
+  // ---- palette: gameplay brushes shape the puzzle; art brushes are pure cosmetics.
+  // Custom tile textures live in a browser library (ksForgeTextures) and appear as extra art brushes.
+  const ED_TEX='ksForgeTextures';
+  function edTexLib(){try{return JSON.parse(localStorage.getItem(ED_TEX)||'{}')||{}}catch(_){return{}}}
+  function edTexStore(name,uri){try{const l=edTexLib();l[name]=uri;localStorage.setItem(ED_TEX,JSON.stringify(l));}catch(_){}}
+  const ED_ART_BRUSH_IDS=['stoneArt','charArt'];
+  function edBuildPalette(){
+    const p=edEl('edPalette');p.innerHTML='';
+    const mk=(bid,label)=>{const b=document.createElement('div');
+      b.className='ed-brush'+(bid===ED.brush?' active':'');b.textContent=label;b.dataset.b=bid;
+      b.addEventListener('click',()=>{ED.brush=bid;p.querySelectorAll('.ed-brush').forEach(x=>x.classList.toggle('active',x.dataset.b===bid));});
+      p.appendChild(b);};
+    const lab=(t,cls)=>{const d=document.createElement('div');d.className='ed-pal-label'+(cls?' '+cls:'');d.textContent=t;p.appendChild(d);};
+    lab('Gameplay — shapes the puzzle');
+    for(const[bid,label]of ED_BRUSHES)if(!ED_ART_BRUSH_IDS.includes(bid))mk(bid,label);
+    lab('Art only — never touches gameplay','artonly');
+    for(const[bid,label]of ED_BRUSHES)if(ED_ART_BRUSH_IDS.includes(bid))mk(bid,label);
+    for(const name of Object.keys(edTexLib()))mk('tex:'+name,'🖼 '+name);
+  }
+  edBuildPalette();
+  function edResize(){
+    ED.cols=Math.max(6,Math.min(24,+edEl('edCols').value||14));
+    ED.rows=Math.max(6,Math.min(24,+edEl('edRows').value||10));
+    edEl('edCols').value=ED.cols;edEl('edRows').value=ED.rows;
+    const inb=k=>{const[r,c]=edUnkey(k);return r<ED.rows&&c<ED.cols;};
+    for(const k of Object.keys(ED.terr))if(!inb(k))delete ED.terr[k];
+    for(const k of Object.keys(ED.struct))if(!inb(k))delete ED.struct[k];
+    for(const k of Object.keys(ED.art))if(!inb(k))delete ED.art[k];
+    for(const k of[...ED.foot])if(!inb(k))ED.foot.delete(k);
+    for(const a of ED_ANCHOR_KEYS){const p=ED.anchors[a];if(p&&!inb(edKey(p[0],p[1])))delete ED.anchors[a];}
+    edRenderGrid();
+  }
+  edEl('edCols').addEventListener('change',edResize);
+  edEl('edRows').addEventListener('change',edResize);
+
+  function edLevel(){   // current editor state -> a level object in the LEVELS schema (raw passthrough first)
+    const lv={...ED.raw};
+    lv.id=lv.id||'custom';
+    lv.name=edEsc(edEl('edName').value||'New Realm');
+    lv.difficulty=edEl('edDiff').value;
+    lv.blurb=edEsc(edEl('edBlurb').value||'');
+    lv.layout='forest';lv.cols=ED.cols;lv.rows=ED.rows;
+    lv.mines=Math.max(1,Math.round(+edEl('edMines').value||1));
+    lv.fire=Math.max(0,Math.round(+edEl('edFire').value||0));
+    lv.sword=Math.max(0,Math.round(+edEl('edSword').value||0));
+    const nd=Math.max(0,Math.round(+edEl('edDragons').value||0));
+    delete lv.dragon;delete lv.dragons;
+    if(nd===1)lv.dragon=true;else if(nd>1)lv.dragons=nd;else lv.dragon=false;
+    const wz=edEl('edWizard').value;
+    lv.wizard=wz!=='none';delete lv.wizardType;if(wz==='counter'||wz==='fog')lv.wizardType=wz;
+    lv.chest=edEl('edChest').checked;
+    const grab=kind=>{const o=[];for(const k in ED.terr)if(ED.terr[k]===kind)o.push(edUnkey(k));return o;};
+    const sortRC=a=>a.sort((x,y)=>x[0]-y[0]||x[1]-y[1]);
+    const setOrDel=(key,arr)=>{if(arr.length)lv[key]=sortRC(arr);else delete lv[key];};
+    setOrDel('water',grab('water'));setOrDel('rocks',grab('rock'));setOrDel('bridge',grab('bridge'));
+    const castle=[],keep=[];   // keep tiles are castle tiles automatically — the one footgun the editor removes
+    for(const k in ED.struct){const p=edUnkey(k);castle.push(p);if(ED.struct[k]==='keep')keep.push(p);}
+    setOrDel('castleTiles',castle);setOrDel('keepTiles',keep);
+    setOrDel('footholds',[...ED.foot].map(edUnkey));
+    const grabArt=kind=>{const o=[];for(const k in ED.art)if(ED.art[k]===kind)o.push(edUnkey(k));return o;};
+    setOrDel('stoneTiles',grabArt('stone'));setOrDel('charTiles',grabArt('char'));
+    const texPaint={},texUsed={},texLib=edTexLib();
+    for(const k in ED.art){const v=ED.art[k];
+      if(v.startsWith('tex:')){const n=v.slice(4);(texPaint[n]=texPaint[n]||[]).push(edUnkey(k));}}
+    for(const n of Object.keys(texPaint)){
+      const u=texLib[n]||(ED.raw.customTiles&&ED.raw.customTiles[n]);
+      if(u){texUsed[n]=u;texPaint[n].sort((a,b)=>a[0]-b[0]||a[1]-b[1]);}else delete texPaint[n];}
+    if(Object.keys(texPaint).length){lv.paintTiles=texPaint;lv.customTiles=texUsed;}
+    else{delete lv.paintTiles;delete lv.customTiles;}
+    if(ED.frCustom){
+      lv.frameImage=ED.frCustom;
+      const wf=(key,val,dflt)=>{if(Math.abs(val-dflt)>1e-9)lv[key]=val;else delete lv[key];};
+      wf('frameScale',+edEl('edFrScale').value,1.15);wf('frameX',+edEl('edFrX').value,0);
+      wf('frameY',+edEl('edFrY').value,0);wf('frameOp',+edEl('edFrOp').value,1);
+    }else for(const k of['frameImage','frameScale','frameX','frameY','frameOp'])delete lv[k];
+    const gt=edEl('edGround').value; if(gt)lv.groundTile=gt; else delete lv.groundTile;
+    const tk=edEl('edTerrK').value;
+    if(tk==='auto'){delete lv.terrainKind;if((lv.rocks||[]).length&&!(lv.water||[]).length)lv.terrainKind='rock';}
+    else lv.terrainKind=tk;
+    const ps=edEl('edOvPreset').value;
+    delete lv.overlayPreset;delete lv.overlayImage;
+    if(ps==='custom'&&ED.ovCustom)lv.overlayImage=ED.ovCustom;
+    else if(ps!=='none'&&ps!=='custom')lv.overlayPreset=ps;
+    if(lv.overlayImage||lv.overlayPreset){
+      const wr=(key,val,dflt)=>{if(Math.abs(val-dflt)>1e-9)lv[key]=val;else delete lv[key];};
+      wr('ovHidden',+edEl('edOvHid').value,OV_OP_HIDDEN);wr('ovCleared',+edEl('edOvClr').value,OV_OP_CLEARED);
+      wr('ovScale',+edEl('edOvScale').value,1);wr('ovX',+edEl('edOvX').value,0);wr('ovY',+edEl('edOvY').value,0);
+      if(edEl('edOvFull').checked)lv.overlayFull=true;else delete lv.overlayFull;
+    } else for(const k of['overlayFull','ovHidden','ovCleared','ovScale','ovX','ovY'])delete lv[k];
+    for(const a of ED_ANCHOR_KEYS){if(ED.anchors[a])lv[a]=ED.anchors[a].slice();else delete lv[a];}
+    if(!ED.raw.fieldLabel)lv.fieldLabel=lv.name.toUpperCase();
+    return lv;
+  }
+  function edImport(){
+    let lv;try{lv=JSON.parse(edEl('edJson').value);}catch(e){edShowMsg('<span class="bad">✖ Bad JSON: '+edEsc(e.message)+'</span>');return;}
+    ED.raw={...lv};
+    ED.cols=Math.max(6,Math.min(24,lv.cols||14));ED.rows=Math.max(6,Math.min(24,lv.rows||10));
+    edEl('edCols').value=ED.cols;edEl('edRows').value=ED.rows;
+    edEl('edName').value=lv.name||'New Realm';
+    edEl('edDiff').value=['Easy','Medium','Hard','Impossible'].includes(lv.difficulty)?lv.difficulty:'Medium';
+    edEl('edBlurb').value=lv.blurb||'';
+    edEl('edMines').value=lv.mines||10;
+    edEl('edFire').value=lv.fire!=null?lv.fire:START_FIRE;
+    edEl('edSword').value=lv.sword!=null?lv.sword:START_SWORD;
+    edEl('edDragons').value=lv.dragons||(lv.dragon?1:0);
+    edEl('edWizard').value=lv.wizard?(lv.wizardType||'random'):'none';
+    edEl('edChest').checked=!!lv.chest;
+    ED.terr={};ED.struct={};ED.foot=new Set();ED.anchors={};ED.art={};
+    for(const[r,c]of lv.water||[])ED.terr[edKey(r,c)]='water';
+    for(const[r,c]of lv.rocks||[])ED.terr[edKey(r,c)]='rock';
+    for(const[r,c]of lv.bridge||[])ED.terr[edKey(r,c)]='bridge';
+    for(const[r,c]of lv.castleTiles||[])ED.struct[edKey(r,c)]='castle';
+    for(const[r,c]of lv.keepTiles||[])ED.struct[edKey(r,c)]='keep';
+    for(const[r,c]of lv.footholds||[])ED.foot.add(edKey(r,c));
+    for(const[r,c]of lv.stoneTiles||[])ED.art[edKey(r,c)]='stone';
+    for(const[r,c]of lv.charTiles||[])ED.art[edKey(r,c)]='char';
+    for(const n in lv.customTiles||{})edTexStore(n,lv.customTiles[n]);
+    for(const n in lv.paintTiles||{})for(const[r,c]of lv.paintTiles[n])ED.art[edKey(r,c)]='tex:'+n;
+    if(lv.customTiles)edBuildPalette();
+    ED.frCustom=lv.frameImage||null;
+    edEl('edFrScale').value=lv.frameScale??1.15;edEl('edFrX').value=lv.frameX??0;
+    edEl('edFrY').value=lv.frameY??0;edEl('edFrOp').value=lv.frameOp??1;
+    edEl('edGround').value=(lv.groundTile==='stone'||lv.groundTile==='char')?lv.groundTile:'';
+    edEl('edTerrK').value=lv.terrainKind==='rock'?'rock':(lv.terrainKind?'water':'auto');
+    ED.ovCustom=lv.overlayImage||ED.ovCustom;
+    edEl('edOvPreset').value=lv.overlayImage?'custom':(lv.overlayPreset&&OVERLAY_PRESETS[lv.overlayPreset]?lv.overlayPreset:'none');
+    edEl('edOvHid').value=lv.ovHidden??OV_OP_HIDDEN;edEl('edOvClr').value=lv.ovCleared??OV_OP_CLEARED;
+    edEl('edOvScale').value=lv.ovScale??1;edEl('edOvX').value=lv.ovX??0;edEl('edOvY').value=lv.ovY??0;
+    edEl('edOvFull').checked=!!lv.overlayFull;
+    for(const a of ED_ANCHOR_KEYS)if(lv[a])ED.anchors[a]=lv[a].slice();
+    edRenderGrid();
+    edShowMsg('<span class="ok">✔ Imported.</span> Paint away — and Validate before you trust it.');
+  }
+  function edJsonPretty(lv){   // one coordinate pair per line is unreadable — collapse pairs back onto one line
+    return JSON.stringify(lv,null,1).replace(/\[\s*\n\s*(-?\d+),\s*\n\s*(-?\d+)\s*\n\s*\]/g,'[$1,$2]');
+  }
+  function edExport(){
+    const txt=edJsonPretty(edLevel());edEl('edJson').value=txt;
+    try{navigator.clipboard&&navigator.clipboard.writeText(txt);}catch(_){}
+    edShowMsg('<span class="ok">✔ Exported</span> (and copied). Commit it into LEVELS, or hand it back to an AI teammate for another pass.');
+  }
+  function edStaticChecks(lv){
+    const P=[];const bad=t=>P.push({t,bad:true}),warn=t=>P.push({t});
+    const terrAt=(r,c)=>ED.terr[edKey(r,c)];
+    const playable=lv.cols*lv.rows-(lv.water||[]).length-(lv.rocks||[]).length
+      -(lv.bridge||[]).length-(lv.keepTiles||[]).length;
+    if(playable<12)bad('Playable area is tiny ('+playable+' tiles) — grow the land.');
+    const dens=lv.mines/Math.max(1,playable);
+    if(dens>0.28)bad('Goblin density '+(dens*100).toFixed(0)+'% of open land — no-guess boards will not generate at this heat. Keep it under ~20%.');
+    else if(dens>0.20)warn('Density '+(dens*100).toFixed(0)+'% — above the ~20% no-guess comfort ceiling; expect heavy generation.');
+    for(const a of ED_ANCHOR_KEYS){const p=lv[a];if(!p)continue;
+      const t=terrAt(p[0],p[1]);if(t==='water'||t==='rock')bad(a+' sits on '+t+'.');
+      else if(p[0]<=0||p[0]>=lv.rows-1||p[1]<=0||p[1]>=lv.cols-1)warn(a+' is on the border — placement prefers interior tiles.');}
+    if(lv.dragonAt&&lv.dragonNear)warn('Both dragonAt and dragonNear set — dragonAt wins for the first dragon.');
+    if(lv.dragonAt&&!(lv.dragon||lv.dragons))warn('dragonAt set but Dragons = 0.');
+    if(lv.wizardNear&&!lv.wizard)warn('wizardNear set but Wizard = none.');
+    if(lv.chestAt&&!lv.chest)warn('chestAt set but Chest unchecked.');
+    if((lv.keepTiles||[]).length&&!(lv.dragon||lv.dragons||lv.wizard||lv.chest))warn('A keep with no boss inside is just a wall of goblins.');
+    for(const b of lv.bridge||[]){let touches=false;
+      for(let dr=-1;dr<=1&&!touches;dr++)for(let dc=-1;dc<=1;dc++)if(terrAt(b[0]+dr,b[1]+dc)==='water'){touches=true;break;}
+      if(!touches){warn('Bridge tile ['+b[0]+','+b[1]+'] touches no water.');break;}}
+    return P;
+  }
+  function edChecksHtml(P){return P.map(p=>'<span class="'+(p.bad?'bad':'warn')+'">'+(p.bad?'✖ ':'⚠ ')+edEsc(p.t)+'</span>').join('\n');}
+  function edTestPlay(){
+    const lv=edLevel(),P=edStaticChecks(lv);
+    if(P.some(p=>p.bad)){edShowMsg(edChecksHtml(P)+'\n<span class="bad">Fix the ✖ items first.</span>');return;}
+    edReturn=true;startLevelObj(lv);
+  }
+  function edValidate(){
+    const lv=edLevel(),P=edStaticChecks(lv),head=edChecksHtml(P);
+    if(P.some(p=>p.bad)){edShowMsg(head+'\n<span class="bad">Fix the ✖ items before trials.</span>');return;}
+    edShowMsg((head?head+'\n':'')+'Running generation trials — proving the no-guess guarantee…');
+    setTimeout(()=>{
+      applyLevelState(lv);
+      const keepSet=new Set((lv.keepTiles||[]).map(([r,c])=>idx(r,c)));
+      const openPool=[];
+      for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const i=idx(r,c);
+        if(water.has(i)||bridge.has(i)||keepSet.has(i))continue;openPool.push([r,c]);}
+      const TRIALS=15;let done=0,clean=0,shed=0,attSum=0,worst=0;const t0=Date.now();
+      for(let t=0;t<TRIALS;t++){
+        if(Date.now()-t0>15000)break;
+        placeEntitiesAtStart();
+        const ent=new Set([...dragonIdxs(),wizardIdx(),chestIdx()].filter(i=>i>=0));
+        const pool=openPool.filter(([r,c])=>!ent.has(idx(r,c)));
+        if(!pool.length){edShowMsg((head?head+'\n':'')+'<span class="bad">✖ No legal opening tile — everything is water, keep, or boss.</span>');return;}
+        const[sr,sc]=pool[Math.floor(Math.random()*pool.length)];
+        genInfo=null;generate(sr,sc);done++;
+        if(genInfo&&genInfo.ok){clean++;attSum+=genInfo.attempts;worst=Math.max(worst,genInfo.attempts);}else shed++;
+      }
+      let verdict;
+      if(done<TRIALS)verdict='<span class="bad">✖ TIMED OUT after '+done+' trials — this spec fights the generator hard. Ease the density or open the terrain.</span>';
+      else if(shed===0)verdict='<span class="ok">✔ '+clean+'/'+done+' clean no-guess boards.</span> avg '+(attSum/Math.max(1,clean)).toFixed(1)+' attempts, worst '+worst+'.'
+        +(worst>300?'\n<span class="warn">⚠ Worst case is near the attempt cap — expect the occasional slow load.</span>':'');
+      else verdict='<span class="bad">✖ '+shed+'/'+done+' boards hit the fairness fallback (goblins shed below your count). This spec cannot hold the no-guess guarantee — lower the count or open the terrain.</span>';
+      edValidatedClean=(done>=TRIALS&&shed===0);
+      edShowMsg((head?head+'\n':'')+verdict);
+    },30);
+  }
+  function edArtReset(){
+    ED.art={};ED.ovCustom=null;
+    edEl('edGround').value='';edEl('edTerrK').value='auto';edEl('edOvPreset').value='none';
+    edEl('edOvHid').value=OV_OP_HIDDEN;edEl('edOvClr').value=OV_OP_CLEARED;
+    edEl('edOvScale').value=1;edEl('edOvX').value=0;edEl('edOvY').value=0;edEl('edOvFull').checked=false;
+    ED.frCustom=null;ED.texPending=null;
+    edEl('edFrScale').value=1.15;edEl('edFrX').value=0;edEl('edFrY').value=0;edEl('edFrOp').value=1;
+    const fp=edEl('edFrPrev');if(fp)fp.remove();
+  }
+  function edClear(){
+    ED.terr={};ED.struct={};ED.foot=new Set();ED.anchors={};ED.raw={};
+    edArtReset();
+    edRenderGrid();edShowMsg('Cleared to open field. The realm forgets; the ROADMAP remembers.');
+  }
+  // ---- realm library: saved customs live in this browser's localStorage; shipped realms open as copies ----
+  const ED_LS='ksForgeRealms', ED_AUTO='ksForgeAutosave';
+  function edLibData(){try{return JSON.parse(localStorage.getItem(ED_LS)||'[]')||[]}catch(_){return[]}}
+  function edLibWrite(a){try{localStorage.setItem(ED_LS,JSON.stringify(a));return true}
+    catch(e){edShowMsg('<span class="bad">✖ Could not save — browser storage is full. Big custom overlay images eat it fast; Export JSON instead, or shrink the PNG.</span>');return false}}
+  const edSlug=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'realm';
+  const ED_SHIPPED_IDS=new Set([...LEVELS,...TRAINING].map(l=>l.id));
+  const edOverlayKeyOf=img=>{for(const k in OVERLAY_PRESETS)if(OVERLAY_PRESETS[k]===img)return k;return null;};
+  function edSave(saveCopy){
+    const lv=edLevel();
+    let id=lv.id;
+    if(saveCopy||!id||id==='custom'||ED_SHIPPED_IDS.has(id))id=edSlug(edEl('edName').value);
+    const lib=edLibData();
+    if(saveCopy){const base=id;let n=2;while(lib.some(x=>x.id===id)||ED_SHIPPED_IDS.has(id))id=base+'-'+(n++);}
+    lv.id=id;ED.raw.id=id;
+    const ix=lib.findIndex(x=>x.id===id);
+    if(ix>=0)lib[ix]=lv;else lib.push(lv);
+    if(edLibWrite(lib)){edRenderLib();forgeAugmentMenus();
+      edShowMsg('<span class="ok">✔ Saved</span> “'+edEsc(lv.name)+'” to your library (this browser only). Export JSON is still how a realm ships into the game.');}
+  }
+  function edLoadShipped(src){
+    const pk=edOverlayKeyOf(src.overlayImage);
+    const lv=JSON.parse(JSON.stringify(src,(k,v)=>(k==='icon'||(k==='overlayImage'&&pk))?undefined:v));
+    if(pk)lv.overlayPreset=pk;
+    edEl('edJson').value=edJsonPretty(lv);edImport();
+    edShowMsg('<span class="ok">✔ Opened a copy</span> of shipped realm “'+edEsc(lv.name)+'”. Save puts your version in the library — the shipped one is untouched.');
+  }
+  function edLoadCustom(id){
+    const lv=edLibData().find(x=>x.id===id);if(!lv)return;
+    edEl('edJson').value=edJsonPretty(lv);edImport();
+    edShowMsg('<span class="ok">✔ Loaded</span> “'+edEsc(lv.name)+'” from your library.');
+  }
+  function edDeleteCustom(id,nm){
+    let ok=true;try{ok=window.confirm('Delete “'+nm+'” from your library? This cannot be undone.');}catch(_){}
+    if(!ok)return;
+    if(edLibWrite(edLibData().filter(x=>x.id!==id))){edRenderLib();forgeAugmentMenus();edShowMsg('Deleted “'+edEsc(nm)+'” from the library.');}
+  }
+  function edRenderLib(){
+    const bar=edEl('edLibBar');if(!bar)return;bar.innerHTML='';
+    const chip=(label,cls,title,onClick,onDel)=>{const d=document.createElement('div');d.className='ed-chip'+(cls?' '+cls:'');d.title=title;
+      const s=document.createElement('span');s.textContent=label;d.appendChild(s);d.addEventListener('click',onClick);
+      if(onDel){const x=document.createElement('span');x.className='ed-chip-x';x.textContent='✕';x.title='Delete from library';
+        x.addEventListener('click',e=>{e.stopPropagation();onDel();});d.appendChild(x);}
+      bar.appendChild(d);};
+    LEVELS.forEach(l=>chip('🏰 '+l.name,'shipped','Shipped campaign realm — opens as an editable copy',()=>edLoadShipped(l)));
+    TRAINING.forEach(l=>chip('⚔ '+l.name,'shipped','Shipped training ground (base variant — the Enemies toggle is applied at play time) — opens as an editable copy',()=>edLoadShipped(l)));
+    for(const l of edLibData())chip('📜 '+(l.name||l.id),'','Your saved realm — click to load',()=>edLoadCustom(l.id),()=>edDeleteCustom(l.id,l.name||l.id));
+    if(!edLibData().length){const n=document.createElement('span');n.className='ed-lib-empty';n.textContent='— no saved realms yet —';bar.appendChild(n);}
+  }
+  // ---- autosave: the working realm survives a refresh; proper saves go through the library ----
+  let edAutoT=null, edValidatedClean=false;
+  function edAutosave(){edValidatedClean=false;clearTimeout(edAutoT);edAutoT=setTimeout(()=>{
+    try{localStorage.setItem(ED_AUTO,edJsonPretty(edLevel()));}catch(_){}},400);}
+  // ---- submit: commit the realm's JSON straight to the repo (levels/<target>/<id>.json).
+  // The GitHub Action rebuilds the HTML on push, closing the solo loop: edit → submit → play.
+  // Token lives in this input only — memory for the session, never persisted anywhere.
+  const ED_GH={owner:'emiliegranqvist-png',repo:'Kingdom-Sweeper-',branch:'main'};
+  async function edSubmit(){
+    const tok=edEl('edGhTok').value.trim();
+    if(!tok){edShowMsg('<span class="bad">✖ Paste a GitHub token first (fine-grained, repo contents read/write). It stays in memory only.</span>');return;}
+    const lv=edLevel();
+    if(!lv.id||lv.id==='custom'){lv.id=edSlug(edEl('edName').value);ED.raw.id=lv.id;}
+    if(!edValidatedClean){
+      let ok=true;try{ok=window.confirm('This realm has edits that have not passed Validate since the last change. The no-guess guarantee rides on Validate. Submit anyway?');}catch(_){}
+      if(!ok){edShowMsg('Submit cancelled — run Validate first, then submit with a clear conscience.');return;}}
+    const cat=edEl('edGhCat').value, path='levels/'+cat+'/'+lv.id+'.json';
+    const api='https://api.github.com/repos/'+ED_GH.owner+'/'+ED_GH.repo+'/contents/'+path;
+    const H={'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json'};
+    const btn=edEl('edSubmitBtn');btn.disabled=true;
+    edShowMsg('Submitting '+path+' …');
+    try{
+      let sha=null;
+      const look=await fetch(api+'?ref='+ED_GH.branch,{headers:H});
+      if(look.ok)sha=(await look.json()).sha;
+      else if(look.status===401||look.status===403)throw new Error('token rejected (HTTP '+look.status+') — check its contents permission on this repo');
+      else if(look.status!==404)throw new Error('lookup failed (HTTP '+look.status+')');
+      const body={message:'Forge submit: '+(lv.name||lv.id)+(sha?'':' (new realm)'),branch:ED_GH.branch,
+        content:btoa(unescape(encodeURIComponent(edJsonPretty(lv)+'\n')))};
+      if(sha)body.sha=sha;
+      const put=await fetch(api,{method:'PUT',headers:H,body:JSON.stringify(body)});
+      if(!put.ok)throw new Error('commit failed (HTTP '+put.status+')');
+      const j=await put.json();
+      edShowMsg('<span class="ok">✔ Submitted</span> '+path+' @ '+String(j.commit&&j.commit.sha||'').slice(0,7)
+        +'. The auto-build bakes fresh HTML in about a minute — grab it from the repo (Actions → latest run, or just pull).');
+    }catch(e){
+      const msg=(e instanceof TypeError||/fetch/i.test(e.message))
+        ?'Could not reach GitHub at all (the request was blocked before authentication). Usual suspects: running inside a sandboxed preview (open the file in a normal browser tab instead), an ad-blocker or privacy extension, or no network. The token was not the problem.'
+        :e.message;
+      edShowMsg('<span class="bad">✖ '+edEsc(msg)+'</span>');}
+    finally{btn.disabled=false;}
+  }
+  // ---- frame art: live preview hugging the paint grid ----
+  function edFrPreview(){
+    const g=edEl('edGrid');if(!g)return;
+    const wrap=g.parentElement;let p=edEl('edFrPrev');
+    if(!ED.frCustom){if(p)p.remove();return;}
+    if(!p){p=document.createElement('div');p.id='edFrPrev';wrap.appendChild(p);}
+    const W=g.offsetWidth||0,H=g.offsetHeight||0;
+    const sc=+edEl('edFrScale').value||1.15,w=W*sc,h=H*sc;
+    p.style.backgroundImage='url("'+ED.frCustom+'")';
+    p.style.width=w+'px';p.style.height=h+'px';
+    p.style.left=(W/2+(+edEl('edFrX').value||0)*W-w/2)+'px';
+    p.style.top=(H/2+(+edEl('edFrY').value||0)*H-h/2)+'px';
+    p.style.opacity=edEl('edFrOp').value;
+  }
+  edEl('edFrFile').addEventListener('change',e=>{
+    const f=e.target.files&&e.target.files[0];if(!f)return;
+    const rd=new FileReader();
+    rd.onload=()=>{ED.frCustom=rd.result;edFrPreview();edAutosave();
+      edShowMsg('<span class="ok">✔ Frame art loaded ('+Math.round(String(rd.result).length/1024)+' KB).</span> Nudge scale/offset until the decorations hug the field — Test Play to see it around the real board.');};
+    rd.readAsDataURL(f);e.target.value='';
+  });
+  edEl('edFrClear').addEventListener('click',()=>{ED.frCustom=null;edFrPreview();edAutosave();edShowMsg('Frame art removed.');});
+  for(const id of['edFrScale','edFrX','edFrY','edFrOp'])
+    for(const ev of['input','change'])edEl(id).addEventListener(ev,()=>{edFrPreview();edAutosave();});
+  // ---- tile textures: upload once, reuse everywhere (browser library; embeds into level JSON when painted) ----
+  edEl('edTexAdd').addEventListener('click',()=>{
+    const name=edSlug(edEl('edTexName').value).replace(/-/g,'_').slice(0,20);
+    const pend=ED.texPending;
+    if(!pend){edShowMsg('<span class="bad">✖ Pick a texture image first.</span>');return;}
+    if(!name||name==='realm'){edShowMsg('<span class="bad">✖ Give the texture a name (letters/numbers).</span>');return;}
+    edTexStore(name,pend);ED.texPending=null;edEl('edTexName').value='';
+    edBuildPalette();
+    edShowMsg('<span class="ok">✔ Texture “'+edEsc(name)+'” added to your palette</span> (art group). It lives in this browser and embeds into any realm you paint it on.');
+  });
+  edEl('edTexFile').addEventListener('change',e=>{
+    const f=e.target.files&&e.target.files[0];if(!f)return;
+    const rd=new FileReader();
+    rd.onload=()=>{ED.texPending=rd.result;
+      if(!edEl('edTexName').value)edEl('edTexName').value=(f.name||'').replace(/\.[^.]*$/,'').replace(/[^a-zA-Z0-9_]/g,'_').slice(0,20);
+      edShowMsg('Texture ready ('+Math.round(String(rd.result).length/1024)+' KB) — name it and hit ＋ Add.');};
+    rd.readAsDataURL(f);e.target.value='';
+  });
+  // ---- forge realms in the real menus: saved library realms are playable from level select (dev build) ----
+  function forgeAugmentMenus(){
+    const wrap=document.getElementById('levels');if(!wrap)return;
+    wrap.querySelectorAll('.lvl-card.forge').forEach(e=>e.remove());
+    for(const lv of edLibData()){
+      const card=document.createElement('div');card.className='lvl-card forge';
+      const icon=lv.icon||(lv.iconKey&&LEVEL_ICONS[lv.iconKey])||'<span style="font-size:44px;">📜</span>';
+      const diff=String(lv.difficulty||'Forge');
+      card.innerHTML='<div class="lvl-icon">'+icon+'</div><div class="lvl-name">📜 '+edEsc(lv.name||lv.id)+'</div>'
+        +'<div class="lvl-diff diff-'+diff.toLowerCase().replace(/[^a-z]/g,'')+'">'+edEsc(diff)+'</div>'
+        +'<div class="lvl-blurb">'+edEsc(lv.blurb||'')+'<br><i>From your Forge library — in the repo only once you Submit.</i></div>';
+      card.addEventListener('click',()=>{edReturn=false;seReturnFn=null;trainReturn=false;
+        startLevelObj(JSON.parse(JSON.stringify(lv)));});
+      wrap.appendChild(card);}
+  }
+  forgeAugmentMenus();
+  edEl('edSubmitBtn').addEventListener('click',edSubmit);
+  // ---- overlay: resolve the selected image, live-preview it over the paint grid ----
+  function edOvImg(){const ps=edEl('edOvPreset').value;
+    return ps==='custom'?ED.ovCustom:(OVERLAY_PRESETS[ps]||null);}
+  function edOvPreview(){
+    const g=edEl('edGrid');if(!g)return;
+    const wrap=g.parentElement;
+    let p=edEl('edOvPrev');const img=edOvImg();
+    if(!img){if(p)p.remove();return;}
+    if(!p){p=document.createElement('div');p.id='edOvPrev';wrap.appendChild(p);}
+    const W=Math.max(0,g.clientWidth-16),H=Math.max(0,g.clientHeight-16);   // 8px grid padding
+    const sc=+edEl('edOvScale').value||1;
+    const ox=(+edEl('edOvX').value||0)*W+(1-sc)*W/2, oy=(+edEl('edOvY').value||0)*H+(1-sc)*H/2;
+    p.style.backgroundImage='url("'+img+'")';
+    p.style.backgroundSize=(W*sc)+'px '+(H*sc)+'px';
+    p.style.backgroundPosition=ox+'px '+oy+'px';
+    p.style.opacity=edEl('edOvHid').value;
+  }
+  edEl('edOvFile').addEventListener('change',e=>{
+    const f=e.target.files&&e.target.files[0];if(!f)return;
+    const rd=new FileReader();
+    rd.onload=()=>{ED.ovCustom=rd.result;edEl('edOvPreset').value='custom';edOvPreview();edAutosave();
+      const kb=Math.round(String(rd.result).length/1024);
+      edShowMsg(kb>400?'<span class="warn">⚠ Custom overlay loaded ('+kb+' KB as data URI) — it embeds into the level JSON and every library save. A smaller PNG will keep things snappy.</span>'
+        :'<span class="ok">✔ Custom overlay loaded.</span> Align with scale and offset — Test Play shows it on real tiles.');};
+    rd.readAsDataURL(f);
+    e.target.value='';
+  });
+  for(const id of['edGround','edTerrK','edOvPreset','edOvHid','edOvClr','edOvFull','edOvScale','edOvX','edOvY'])
+    for(const ev of['input','change'])edEl(id).addEventListener(ev,()=>{edOvPreview();edAutosave();});
+  for(const id of['edName','edDiff','edBlurb','edMines','edFire','edSword','edDragons','edWizard','edChest'])
+    edEl(id).addEventListener('change',edAutosave);
+  edEl('edSaveBtn').addEventListener('click',()=>edSave(false));
+  edEl('edSaveCopyBtn').addEventListener('click',()=>edSave(true));
+  edArtReset();
+  edEl('toEditor').addEventListener('click',showEditor);
+  edEl('edBack').addEventListener('click',showLevelSelect);
+  edEl('edPlay').addEventListener('click',edTestPlay);
+  edEl('edValidate').addEventListener('click',edValidate);
+  edEl('edExport').addEventListener('click',edExport);
+  edEl('edImport').addEventListener('click',edImport);
+  edEl('edClear').addEventListener('click',edClear);
+
+  // ---- AI assist: author or revise a realm via the Anthropic API, straight into the forge ----
+  // The key lives in the input field only — never persisted anywhere. Response JSON is imported
+  // through the normal edImport path and then auto-Validated, so an AI realm faces the same
+  // fairness bar as a hand-made one.
+  const ED_AI_SPEC=`You are a level designer for Kingdom Sweeper, a fantasy no-guess Minesweeper. Author ONE level as a single JSON object. Respond with ONLY the JSON — no markdown fences, no commentary.
+
+Coordinates are [row,col], zero-indexed, row 0 at top. Board is rows x cols (6-24 each; typical 12x9 to 18x14).
+
+Fields: id (slug), name, difficulty (Easy|Medium|Hard|Impossible), blurb (one flavor sentence), layout:"forest", cols, rows, mines (goblin count), fire (starting fireballs, 0-2), sword (0-2), dragon (bool, one dragon) OR dragons (int >1), wizard (bool), wizardType ("counter"|"fog", omit for random), chest (bool), fieldLabel (name uppercased).
+
+Optional terrain arrays of [r,c] pairs:
+- water: impassable, never mined, blocks number adjacency
+- rocks: same mechanics, mountain flavor; if using rocks and no water also set terrainKind:"rock"
+- bridge: safe walkway over water — never mined, must be cleared
+- castleTiles: stone tiles, mine placement weighted toward them
+- keepTiles: solver-EXEMPT deathtrap packed with mines, breached with spells; every keepTile MUST also appear in castleTiles; only worth it with a boss/chest inside
+- footholds: [r,c] points opening a safe starting circle — put one on any landmass separated by water, or that side is unsolvable
+
+Optional anchors [r,c] on land, interior preferred: chestAt, dragonAt, dragonNear (radius 2.2), wizardNear (radius 2.4).
+
+Optional art (pure cosmetics — zero effect on mechanics or fairness): groundTile ("stone"|"char"; omit for grass), stoneTiles / charTiles arrays of [r,c] ground-art patches, overlayPreset ("glade"|"river"|"keep"|"castle"|"volcano"), ovHidden / ovCleared (0-1 overlay opacities), ovScale / ovX / ovY (overlay alignment; defaults 1 / 0 / 0), overlayFull (bool, draw over water too).
+
+FAIRNESS (hard rules): every board must be solvable by pure deduction. Playable land = cols*rows - water - rocks - bridge - keepTiles. Keep mines UNDER 20% of playable land (15-18% is the sweet spot). Terrain should create readable fronts, not thin 1-wide corridors (corridors force 50/50s). Keep water/rock shapes coherent (lakes, rivers, ridges - not scattered singles).
+
+Design taste: casual-friendly first. One clear fantasy idea per realm, readable at a glance. Escalate spice via terrain and bosses, not raw density.`;
+  async function edAI(){
+    const key=edEl('edKey').value.trim(), req=edEl('edPrompt').value.trim(), btn=edEl('edAIBtn');
+    if(!key){edShowMsg('<span class="bad">✖ Paste an Anthropic API key first (kept in memory only, never saved).</span>');return;}
+    if(!req){edShowMsg('<span class="bad">✖ Describe the realm you want first.</span>');return;}
+    btn.disabled=true;btn.textContent='✨ Forging…';
+    const hasRealm=Object.keys(ED.terr).length||Object.keys(ED.struct).length||Object.keys(ED.raw).length;
+    const user=hasRealm
+      ?('Current level JSON:\n'+edJsonPretty(edLevel())+'\n\nRevise it per this request and return the FULL updated level JSON: '+req)
+      :('Author a new level for this request: '+req);
+    try{
+      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{
+        'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:4000,system:ED_AI_SPEC,
+          messages:[{role:'user',content:user}]})});
+      const data=await r.json();
+      if(data.error)throw new Error(data.error.message||('API error '+r.status));
+      const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+      const s=txt.indexOf('{'),e=txt.lastIndexOf('}');
+      if(s<0||e<s)throw new Error('no JSON in the response');
+      edEl('edJson').value=txt.slice(s,e+1);
+      edImport();
+      edValidate();   // an AI realm faces the same fairness bar as a hand-made one
+    }catch(err){
+      edShowMsg('<span class="bad">✖ AI forge failed: '+edEsc(err.message)+'</span>\nIf this is a network/CORS error while running from file://, serve it instead: <b>python3 -m http.server</b>, then open via localhost.');
+    }
+    btn.disabled=false;btn.textContent='✨ Forge with AI';
+  }
+  edEl('edAIBtn').addEventListener('click',edAI);
+
+  // ---- Bot Test: the headless harness's perfect-play bot, in the tool ----
+  // Plays the realm to completion by pure deduction (scout solver-safe tiles, strike
+  // solver-sure goblins, spell-breach exempt keeps when steel and logic run out).
+  // Reports: wins, deaths/stalls (either = a bug or a broken spec), guidance health
+  // (a hint must exist at every stall), and a difficulty fingerprint — the share of
+  // moves where no easy-tier hint existed ("hard reads").
+  function edBotGame(lv){
+    applyLevelState(lv);newGame();
+    // opening: random open grass, not water/bridge/boss/keep
+    const keepSet=new Set((lv.keepTiles||[]).map(([r,c])=>idx(r,c)));
+    const opens=[];for(let i=0;i<N;i++)if(!water.has(i)&&!bridge.has(i)&&!keepSet.has(i)&&!isBoss(i))opens.push(i);
+    if(!opens.length)return{fail:'no opening tile'};
+    const o=opens[Math.floor(Math.random()*opens.length)];
+    setTool('reveal');handleCell(Math.floor(o/COLS),o%COLS,false);
+    if(!started)return{fail:'opening click did not start the game'};
+    let moves=1,strikes=0,hard=0,samples=0,noHint=0,deep=0,gambles=0;
+    // full-state signature: dragon scrambles re-bury tiles AND relocate mines mid-click,
+    // so a count-based sig can net to zero and leave a stale candidate list live — hash it all
+    const sig=()=>revealed.map(x=>x?1:0).join('')+'|'+mines.map(x=>x?1:0).join('')+'|'+slain.size+'|'+fireLeft+'|'+swordLeft+'|'+(won?1:0)+(dead?1:0);
+    const tryMoves=(cands)=>{   // attempt candidates until one actually changes state (ward fizzles etc. get skipped)
+      while(cands.length){
+        const k=Math.floor(Math.random()*cands.length),{i,right}=cands.splice(k,1)[0];
+        const before=sig();setTool('reveal');handleCell(Math.floor(i/COLS),i%COLS,right);
+        if(sig()!==before){moves++;if(right)strikes++;return true;}}
+      return false;};
+    // bot-only heavy enumeration for frontiers past the in-game solver's budget (MAX_COMPONENT
+    // bounds the hint engine, not the fairness): cells here are still information-theoretically
+    // forced — a determined human can grind any finite component on paper.
+    const deepSolve=()=>{
+      const F=[];
+      for(let i=0;i<N;i++){
+        if(!revealed[i]||adj[i]<=0||fog[i]||slain.has(i))continue;
+        const{known,unk}=numScan(Math.floor(i/COLS),i%COLS);
+        if(unk.length)F.push({need:adj[i]-known,unk});}
+      const cellSet=new Set();F.forEach(f=>f.unk.forEach(u=>cellSet.add(u)));
+      const cells=[...cellSet],ci=new Map(cells.map((c,k)=>[c,k])),parent=cells.map((_,k)=>k);
+      const find=x=>{while(parent[x]!==x){parent[x]=parent[parent[x]];x=parent[x];}return x;};
+      for(const f of F)for(let k=1;k<f.unk.length;k++)parent[find(ci.get(f.unk[0]))]=find(ci.get(f.unk[k]));
+      const comps=new Map();cells.forEach((c,k)=>{const r=find(k);if(!comps.has(r))comps.set(r,[]);comps.get(r).push(c);});
+      const safe=[],mine=[];
+      for(const[,comp]of comps){
+        if(comp.length>34)continue;   // keep(21)+border reaches ~27-30 cells; dense constraints prune hard, node budget catches the rest
+        const li=new Map(comp.map((c,k)=>[c,k]));
+        const lc=F.filter(f=>f.unk.every(u=>li.has(u))).map(f=>({cells:f.unk.map(u=>li.get(u)),sum:f.need}));
+        const n=comp.length,mineAll=new Array(n).fill(true),safeAll=new Array(n).fill(true);
+        let sols=0,nodes=0,blown=false;const asg=new Array(n).fill(-1);
+        const ok=()=>{for(const con of lc){let sm=0,u=0;for(const c of con.cells){if(asg[c]===1)sm++;else if(asg[c]===-1)u++;}
+          if(sm>con.sum||sm+u<con.sum)return false;}return true;};
+        (function rec(k){if(blown||sols>1000000)return;if(++nodes>8000000){blown=true;return;}
+          if(k===n){if(ok()){sols++;for(let c=0;c<n;c++){if(asg[c]===1)safeAll[c]=false;else mineAll[c]=false;}}return;}
+          asg[k]=0;if(ok())rec(k+1);asg[k]=1;if(ok())rec(k+1);asg[k]=-1;})(0);
+        if(blown||!sols)continue;
+        for(let c=0;c<n;c++){if(safeAll[c])safe.push(comp[c]);else if(mineAll[c])mine.push(comp[c]);}}
+      return{safe,mine};};
+    let guard=0;
+    while(!won&&!dead&&guard++<800){
+      // exempt=∅ on purpose: exempting the keep inflates border numbers (issue #10), which is
+      // sound along generation's canonical path but can falsely mark field cells off it. With
+      // no exemption every constraint is truthful; huge keep components simply bail to deepSolve.
+      const trace=solveTrace(mines,adj,currentOpenSet(),foggedSet(),new Set());
+      const scouts=[],sure=[];
+      for(let i=0;i<N;i++){
+        if(trace.st[i]===1&&!revealed[i])scouts.push(i);
+        else if(trace.st[i]===2&&!revealed[i]&&!slain.has(i)&&!isBoss(i))sure.push(i);}
+      samples++;if(!guideRecs().length){hard++;if(!computeComplex())noHint++;}
+      if(tryMoves([...scouts.map(i=>({i,right:false})),...sure.map(i=>({i,right:true}))]))continue;
+      // play what guidance teaches (the eyes and the gold numbers) — this is how a player
+      // chips at keep borders, where exempt cells are invisible to the fairness solver
+      {const gm=[];
+       for(const rec of guideRecs()){
+         if(rec.kind==='goblin')for(const t of rec.tiles)if(!revealed[t]&&!slain.has(t)&&!isBoss(t))gm.push({i:t,right:true});
+         if(rec.kind==='chord')gm.push({i:rec.num,right:false});}
+       if(tryMoves(gm))continue;}
+      // in-game solver exhausted: deep-enumerate (still pure deduction, just a bigger budget)
+      const dp=deepSolve();
+      if(tryMoves([...dp.safe.filter(i=>!revealed[i]).map(i=>({i,right:false})),
+                   ...dp.mine.filter(i=>!revealed[i]&&!slain.has(i)&&!isBoss(i)).map(i=>({i,right:true}))])){deep++;continue;}
+      // global goblin-count deductions — cheap, and they crack endgames big components can't
+      {const living=mines.reduce((a,m,i)=>a+(m&&!slain.has(i)&&!isBoss(i)?1:0),0);
+       const unkAll=[];for(let i=0;i<N;i++)if(!revealed[i]&&!water.has(i)&&!isBoss(i))unkAll.push(i);
+       if(unkAll.length&&living===0){if(tryMoves(unkAll.map(i=>({i,right:false}))))continue;}
+       if(unkAll.length&&living===unkAll.length){if(tryMoves(unkAll.map(i=>({i,right:true}))))continue;}}
+      // no logical move at any budget: breach the exempt keep with spells (the sanctioned unfair zone)
+      let target=-1,best=-1;
+      for(const ki of levelExempt()){if(revealed[ki])continue;
+        let h=0;for(const[nr,nc]of neighbors(Math.floor(ki/COLS),ki%COLS))if(!revealed[idx(nr,nc)])h++;
+        if(h>best){best=h;target=ki;}}
+      if(target>=0&&(fireLeft>0||swordLeft>0)){
+        const before=sig();setTool(fireLeft>0?'fire':'sword');
+        handleCell(Math.floor(target/COLS),target%COLS,false);
+        if(sig()!==before){moves++;continue;}}
+      // spells dry. If everything left to clear is exempt keep, that's the designed gamble —
+      // the keep was never promised fair. Gamble like a player would and record the outcome.
+      {const ex=levelExempt();let onlyKeepLeft=true;
+       for(let i=0;i<N;i++)if(!mines[i]&&!water.has(i)&&!revealed[i]&&!ex.has(i)){onlyKeepLeft=false;break;}
+       if(onlyKeepLeft&&target>=0){
+         const pool=[...ex].filter(i=>!revealed[i]&&!slain.has(i)&&!isBoss(i));
+         if(pool.length){const gi=pool[Math.floor(Math.random()*pool.length)];
+           gambles++;setTool('reveal');handleCell(Math.floor(gi/COLS),gi%COLS,false);moves++;
+           if(dead)return{gambleDeath:true,moves,gambles};
+           continue;}}}
+      if(target>=0)return{cornered:true,moves,gambles};   // spells dry, keep unbreached, field tiles unprovable —
+                                                          // usually the bot's greedy spell play, not a broken realm
+      // bot-reachable states are always solvable in principle (it only ever makes proven moves), so a
+      // stall here means the frontier outgrew the bot's enumeration budget — unless guidance is ALSO
+      // dry at every tier, which would be a genuine no-hint state and a real bug.
+      if(guideRecs().length||computeComplex())return{budget:true,moves};
+      return{fail:'solver stuck AND guidance dry at every tier — genuine no-hint state, F9-worthy',moves,dump:ksDump()};
+    }
+    if(won)return{won:true,moves,strikes,hardPct:samples?hard/samples:0,noHint,deep,gambles};   // checkWin sets dead=true too (input lock) — won first
+    if(dead)return{fail:'bot DIED on a sure move — engine bug, dump in console',moves,dump:ksDump()};   // gamble deaths return earlier and never land here
+    return{fail:'move cap hit without a win',moves,dump:ksDump()};
+  }
+  function edBotTest(){
+    const lv=edLevel(),P=edStaticChecks(lv);
+    if(P.some(p=>p.bad)){edShowMsg(edChecksHtml(P)+'\n<span class="bad">Fix the ✖ items first.</span>');return;}
+    const GAMES=5,res=[];let g=0;
+    suppressVictory=true;
+    const runOne=()=>{
+      edShowMsg('🤖 Bot playing game '+(g+1)+'/'+GAMES+' by pure deduction…');
+      setTimeout(()=>{
+        const r=edBotGame(lv);res.push(r);
+        if(r.fail&&r.dump)console.log('BOT TEST FAIL DUMP (game '+g+'):',JSON.stringify(r.dump));
+        if(++g<GAMES&&!r.fail)runOne();else finish();   // gamble deaths continue; hard fails stop
+      },30);};
+    const finish=()=>{
+      setTimeout(()=>{suppressVictory=false;},900);   // outlive the last win's 650ms victory timer
+      const fails=res.filter(r=>r.fail),wins=res.filter(r=>r.won),gdeaths=res.filter(r=>r.gambleDeath),cornered=res.filter(r=>r.cornered),budget=res.filter(r=>r.budget);
+      if(fails.length){edShowMsg('<span class="bad">✖ Bot test FAILED on game '+res.length+': '+edEsc(fails[0].fail)+'.</span>'+(fails[0].dump?'\nFull state dump is in the browser console — F12.':''));return;}
+      if(!wins.length){edShowMsg('<span class="bad">✖ No run finished ('+gdeaths.length+' keep-gamble deaths, '+cornered.length+' cornered, '+budget.length+' past the bot\'s budget) — Test Play it yourself; if you can\'t finish either, the spec is broken.</span>');return;}
+      const avg=k=>wins.reduce((a,r)=>a+r[k],0)/wins.length;
+      const hardPct=avg('hardPct')*100, noHint=wins.reduce((a,r)=>a+r.noHint,0), deeps=wins.reduce((a,r)=>a+r.deep,0), gambles=res.reduce((a,r)=>a+(r.gambles||0),0);
+      const score=hardPct+(deeps/wins.length)*8;   // deep deductions weigh heavy — needs calibration against real playtests (#12)
+      const feel=score<8?'Easy':score<22?'Medium':score<45?'Hard':'Impossible';
+      edShowMsg('<span class="ok">✔ '+wins.length+'/'+GAMES+' bot playthroughs won'+(gambles?' ('+gambles+' keep gambles taken)':' by pure deduction')+'.</span>'
+        +(gdeaths.length?'\n<span class="warn">⚠ '+gdeaths.length+'/'+GAMES+' runs died gambling in the keep after spells ran dry — the keep is unfair by design, but check the spell economy feels right in Test Play.</span>':'')
+        +(cornered.length?'\n<span class="warn">⚠ '+cornered.length+'/'+GAMES+' runs got cornered at the keep (spells spent, remaining tiles unprovable) — likely the bot\'s greedy spell play; Test Play to judge the economy yourself.</span>':'')
+        +(budget.length?'\n<span class="warn">⚠ '+budget.length+'/'+GAMES+' runs hit a frontier past the bot\'s enumeration budget (still solvable — guidance had a pointer). Expect a spicy late-game.</span>':'')+'\n'
+        +'avg '+avg('moves').toFixed(0)+' moves, '+avg('strikes').toFixed(0)+' strikes'
+        +'\nhard reads (no easy hint anywhere): '+hardPct.toFixed(0)+'% of states; '+deeps+' beyond-hint-budget deductions — rough difficulty proxy: <b>'+feel+'</b>'
+        +(noHint?'\n<span class="bad">✖ '+noHint+' states had NO hint at any tier — guidance hole, F9-worthy.</span>':'\n<span class="ok">guidance had a hint at every state.</span>'));
+    };
+    runOne();
+  }
+  edEl('edBotBtn').addEventListener('click',edBotTest);
+  
 
   buildArt();
   buildMenu();
@@ -2191,6 +3045,317 @@ const DEFAULT_P={
       setMsg('Debug state copied to clipboard (and console). Paste it into the bug report.','');});
   }
 
+  
+  // ---------- Sound Forge v2: the audio workbench (DEV BUILD ONLY) ----------
+  // Sounds are recipes (docs/SOUNDS.md): layer cards edit structure, the JSON view
+  // and the AI edit whole recipes, custom sounds can be added/removed, and any
+  // realm can be booted from here to hear everything in context.
+  const SE_LABELS={reveal:'Tile Reveal',cascade:'Cascade',fireball:'Fireball',sword:'Sword',
+    slash:'Goblin Slain',dragon:'Dragon Roar',wizard:'Wizard Falls',boom:'Mine / Death',
+    hint:'Hint — Number',hintGoblin:'Hint — Goblin Eyes',hintWeb:'Hint — Arcane Web',
+    loot:'Chest Loot',victory:'Victory'};
+  const seP=KSAudio.getParams(), seDef=KSAudio.getDefaults(), SE_SLOTS=KSAudio.gameSlots;
+  let seSel='reveal';
+  const seEl=id=>document.getElementById(id);
+  const seCopy=o=>JSON.parse(JSON.stringify(o));
+  function seDirty(k){
+    if(k==='music')return JSON.stringify(seP.music)!==JSON.stringify(seDef.music);
+    if(!seDef.sounds[k])return false;   // custom sounds have no default to differ from
+    return JSON.stringify(seP.sounds[k])!==JSON.stringify(seDef.sounds[k]);
+  }
+  function sePlay(k){if(k==='music')return;KSAudio.play(k,k==='cascade'?12:undefined);}
+  function sePlayDefault(k){
+    if(k==='music'||!seDef.sounds[k])return;
+    const cur=seP.sounds[k];seP.sounds[k]=seCopy(seDef.sounds[k]);
+    sePlay(k);seP.sounds[k]=cur;   // recipes are read synchronously at trigger time
+  }
+  function seKB(dataURI){return Math.round(dataURI.length*0.75/1024);}
+  function seImportFile(cb){
+    const inp=document.createElement('input');
+    inp.type='file';inp.accept='audio/*';
+    inp.addEventListener('change',()=>{
+      const f=inp.files&&inp.files[0];if(!f)return;
+      if(f.size>1.5e6&&!confirm('That file is '+Math.round(f.size/1024)+' KB — it will be embedded in the single-file build. Import anyway?'))return;
+      const r=new FileReader();
+      r.onload=()=>cb(r.result);
+      r.readAsDataURL(f);
+    });
+    inp.click();
+  }
+  function seBuildList(){
+    const L=seEl('seList');L.innerHTML='';
+    const grp=t=>{const d=document.createElement('div');d.className='grp';d.textContent=t;L.appendChild(d);};
+    const btn=(k,label)=>{const b=document.createElement('button');b.className='btn'+(k===seSel?' sel':'');
+      b.textContent=label+(seDirty(k)?' •':'');
+      b.addEventListener('click',()=>{seSel=k;seBuildList();seBuildPanel();});L.appendChild(b);};
+    grp('Game Sounds');for(const k of SE_SLOTS)btn(k,SE_LABELS[k]||k);
+    grp('Music');btn('music','Music');
+    const customs=Object.keys(seP.sounds).filter(k=>!SE_SLOTS.includes(k));
+    grp('Custom');
+    for(const k of customs)btn(k,k);
+    const nb=document.createElement('button');nb.className='btn ghost';nb.textContent='＋ New sound';
+    nb.addEventListener('click',()=>{
+      const name=(prompt('Name the new sound (letters/digits/underscore, starts with a letter):')||'').trim();
+      if(!name)return;
+      if(!KSAudio.addSound(name)){seEl('seNote').textContent='Could not add "'+name+'" — bad name or it already exists.';return;}
+      seSel=name;seBuildList();seBuildPanel();sePlay(name);
+    });
+    L.appendChild(nb);
+  }
+  // ---- layer cards: structure is editable, not just numbers ----
+  const SE_KIND_TPL={
+    osc:{kind:'osc',wave:'sine',freq:440,dur:0.3,level:0.15,attack:0.01},
+    noise:{kind:'noise',dur:0.2,level:0.15,filter:{type:'lowpass',freq:1200}},
+    pluck:{kind:'pluck',midi:74,dur:0.6,level:0.25,damp:0.994}};
+  const SE_ENUMS={kind:['osc','noise','pluck'],wave:['sine','square','sawtooth','triangle'],type:['lowpass','highpass','bandpass','notch']};
+  function seField(obj,key,onChange){
+    const v=obj[key];
+    const wrap=document.createElement('label');
+    wrap.style.cssText='display:inline-flex;align-items:center;gap:4px;font-size:11.5px;margin:2px 8px 2px 0;';
+    wrap.textContent=key+' ';
+    let inp;
+    if(SE_ENUMS[key]){
+      inp=document.createElement('select');
+      for(const o of SE_ENUMS[key]){const op=document.createElement('option');op.value=op.textContent=o;if(o===v)op.selected=true;inp.appendChild(op);}
+      inp.addEventListener('change',()=>{obj[key]=inp.value;onChange();});
+    }else if(typeof v==='boolean'){
+      inp=document.createElement('input');inp.type='checkbox';inp.checked=v;
+      inp.addEventListener('change',()=>{obj[key]=inp.checked;onChange();});
+    }else if(typeof v==='number'){
+      inp=document.createElement('input');inp.type='number';inp.value=v;inp.step='any';
+      inp.style.width='64px';
+      inp.addEventListener('change',()=>{obj[key]=+inp.value;onChange();});
+    }else if(Array.isArray(v)||typeof v==='object'){
+      inp=document.createElement('input');inp.type='text';inp.value=JSON.stringify(v);
+      inp.style.cssText='width:190px;font-family:monospace;font-size:10.5px;';
+      inp.addEventListener('change',()=>{try{obj[key]=JSON.parse(inp.value);inp.style.borderColor='';onChange();}catch(e){inp.style.borderColor='#e79a8c';}});
+    }else{
+      inp=document.createElement('input');inp.type='text';inp.value=String(v);inp.style.width='80px';
+      inp.addEventListener('change',()=>{obj[key]=inp.value;onChange();});
+    }
+    wrap.appendChild(inp);
+    return wrap;
+  }
+  function seLayerCard(recipe,idx,onChange){
+    const L=recipe[idx];
+    const card=document.createElement('div');
+    card.style.cssText='border:1px solid var(--edge, #2e524c);border-radius:5px;padding:8px 10px;margin-bottom:8px;';
+    const head=document.createElement('div');
+    head.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:12px;';
+    const title=document.createElement('b');title.textContent='Layer '+(idx+1);
+    head.appendChild(title);
+    const mk=(txt,fn,tip)=>{const b=document.createElement('button');b.className='btn ghost';b.textContent=txt;
+      b.title=tip;b.style.cssText='font-size:10.5px;padding:2px 7px;';b.addEventListener('click',fn);head.appendChild(b);};
+    mk('⧉',()=>{recipe.splice(idx+1,0,seCopy(L));onChange(true);},'Duplicate layer');
+    mk('✕',()=>{recipe.splice(idx,1);onChange(true);},'Remove layer');
+    card.appendChild(head);
+    const body=document.createElement('div');
+    // kind first, then nested filter/lfo/bend/repeat objects flattened one level
+    body.appendChild(seField(L,'kind',()=>{const t=seCopy(SE_KIND_TPL[L.kind]||SE_KIND_TPL.osc);recipe[idx]=Object.assign(t,{at:L.at,dur:L.dur,level:L.level});onChange(true);}));
+    for(const key of Object.keys(L)){
+      if(key==='kind')continue;
+      if(L[key]&&typeof L[key]==='object'&&!Array.isArray(L[key])){
+        const sub=document.createElement('span');
+        sub.style.cssText='display:inline-block;border-left:2px solid var(--edge, #2e524c);padding-left:6px;margin:2px 8px 2px 0;';
+        const cap=document.createElement('span');cap.style.cssText='font-size:10.5px;opacity:.7;';cap.textContent=key+': ';
+        sub.appendChild(cap);
+        for(const k2 of Object.keys(L[key]))sub.appendChild(seField(L[key],k2,()=>onChange()));
+        body.appendChild(sub);
+      }else body.appendChild(seField(L,key,()=>onChange()));
+    }
+    card.appendChild(body);
+    return card;
+  }
+  function seBuildPanel(){
+    const pn=seEl('sePanel');pn.innerHTML='';
+    const isMusic=seSel==='music',isSlot=SE_SLOTS.includes(seSel);
+    const snd=isMusic?null:seP.sounds[seSel];
+    if(!isMusic&&!snd){seSel='reveal';return seBuildPanel();}
+    const h=document.createElement('h2');h.textContent=isMusic?'Music':(SE_LABELS[seSel]||seSel);pn.appendChild(h);
+    const d=document.createElement('div');d.className='se-desc';
+    d.textContent=isMusic?'The two theme loops. Tempo changes take effect on the next loop; an imported file loops in place of a theme.'
+      :(isSlot?'Wired into the game.':'Custom sound — not wired into the game yet; a scratchpad slot.');
+    pn.appendChild(d);
+    const row=document.createElement('div');row.className='se-btns';
+    const mkBtn=(txt,cls,fn)=>{const b=document.createElement('button');b.className='btn'+(cls?' '+cls:'');b.textContent=txt;b.addEventListener('click',fn);row.appendChild(b);return b;};
+    const rerender=(structural)=>{KSAudio.refresh();seBuildList();if(structural)seBuildPanel();sePlay(seSel);};
+    if(isMusic){
+      mkBtn('▶ Village','',()=>KSAudio.music.play('village'));
+      mkBtn('▶ The Keep','',()=>KSAudio.music.play('keep'));
+      mkBtn('■ Stop','',()=>KSAudio.music.stop());
+      mkBtn('Reset','ghost',()=>{Object.assign(seP.music,seCopy(seDef.music));KSAudio.refresh();KSAudio.music.stop();seBuildList();seBuildPanel();});
+    }else{
+      mkBtn('▶ Play','primary',()=>sePlay(seSel));
+      if(isSlot)mkBtn('▶ Play default','',()=>sePlayDefault(seSel));
+      mkBtn('📂 Import file','',()=>seImportFile(uri=>{snd.sample=uri;rerender(true);}));
+      if(isSlot)mkBtn('Reset','ghost',()=>{seP.sounds[seSel]=seCopy(seDef.sounds[seSel]);rerender(true);});
+      else mkBtn('🗑 Delete','ghost',()=>{if(!confirm('Delete "'+seSel+'"?'))return;KSAudio.removeSound(seSel);seSel='reveal';seBuildList();seBuildPanel();});
+    }
+    pn.appendChild(row);
+    if(!isMusic&&snd.sample){
+      const sm=document.createElement('div');sm.className='se-sample';
+      sm.textContent='Imported file in use ('+seKB(snd.sample)+' KB) — the recipe below is bypassed. ';
+      const clr=document.createElement('button');clr.className='btn ghost';clr.textContent='✕ Back to recipe';clr.style.cssText='font-size:11px;padding:4px 8px;';
+      clr.addEventListener('click',()=>{snd.sample=null;seBuildList();seBuildPanel();sePlay(seSel);});
+      sm.appendChild(clr);pn.appendChild(sm);
+    }
+    if(isMusic){
+      for(const[track,field]of[['Village','villageSample'],['The Keep','keepSample']]){
+        const sm=document.createElement('div');sm.className='se-sample';
+        if(seP.music[field]){
+          sm.textContent=track+': imported file loops ('+seKB(seP.music[field])+' KB). ';
+          const clr=document.createElement('button');clr.className='btn ghost';clr.textContent='✕ Back to theme';clr.style.cssText='font-size:11px;padding:4px 8px;';
+          clr.addEventListener('click',()=>{seP.music[field]=null;KSAudio.music.stop();seBuildList();seBuildPanel();});
+          sm.appendChild(clr);
+        }else{
+          const imp=document.createElement('button');imp.className='btn ghost';imp.textContent='📂 Import '+track+' track';imp.style.cssText='font-size:11px;padding:4px 8px;';
+          imp.addEventListener('click',()=>seImportFile(uri=>{seP.music[field]=uri;KSAudio.refresh();seBuildList();seBuildPanel();}));
+          sm.appendChild(imp);
+        }
+        pn.appendChild(sm);
+      }
+      // music numeric knobs
+      for(const[key,label,min,max,step]of[['level','Music volume',0,1,0.01],['villageBpm','Village tempo (BPM)',60,140,1],['keepBpm','Keep tempo (BPM)',50,110,1]]){
+        const p=document.createElement('div');p.className='se-row';
+        const lab=document.createElement('label');lab.textContent=label;
+        const sl=document.createElement('input');sl.type='range';sl.min=min;sl.max=max;sl.step=step;sl.value=seP.music[key];
+        const val=document.createElement('div');val.className='val';
+        const paint=()=>{val.textContent=String(seP.music[key]);val.classList.toggle('dirty',seP.music[key]!==seDef.music[key]);};
+        paint();
+        sl.addEventListener('input',()=>{seP.music[key]=+sl.value;KSAudio.refresh();paint();seBuildList();});
+        p.appendChild(lab);p.appendChild(sl);p.appendChild(val);pn.appendChild(p);
+      }
+      return;
+    }
+    // layer cards
+    const recipe=snd.recipe=snd.recipe||[];
+    recipe.forEach((_,i)=>pn.appendChild(seLayerCard(recipe,i,rerender)));
+    const add=document.createElement('div');add.className='se-btns';
+    for(const kind of['osc','noise','pluck']){
+      const b=document.createElement('button');b.className='btn ghost';b.textContent='＋ '+kind+' layer';
+      b.style.cssText='font-size:11px;padding:5px 10px;';
+      b.addEventListener('click',()=>{recipe.push(seCopy(SE_KIND_TPL[kind]));rerender(true);});
+      add.appendChild(b);
+    }
+    pn.appendChild(add);
+    // raw recipe JSON: the power path, same format the AI speaks
+    const jrow=document.createElement('div');
+    const ta=document.createElement('textarea');
+    ta.style.cssText='width:100%;height:90px;resize:vertical;font-family:monospace;font-size:10.5px;margin-top:8px;';
+    ta.value=JSON.stringify(recipe);
+    const ap=document.createElement('button');ap.className='btn';ap.textContent='Apply JSON';ap.style.cssText='font-size:11px;padding:5px 10px;margin-top:4px;';
+    ap.addEventListener('click',()=>{
+      try{const r=JSON.parse(ta.value);if(!Array.isArray(r))throw 0;snd.recipe=r;rerender(true);}
+      catch(e){seEl('seNote').textContent='Recipe JSON did not parse — must be an array of layers.';}
+    });
+    jrow.appendChild(ta);jrow.appendChild(ap);pn.appendChild(jrow);
+  }
+  // ---- export / import: the DEFAULT_P block, samples included ----
+  function seShowIO(txt,note,mode){
+    const ta=seEl('seJson');ta.hidden=false;ta.value=txt;ta.dataset.mode=mode||'';
+    seEl('seNote').innerHTML=note;
+  }
+  seEl('seExport').addEventListener('click',()=>{
+    const txt='const DEFAULT_P='+JSON.stringify(seP,null,1).replace(/"([a-zA-Z]\w*)":/g,'$1:')+';';
+    seShowIO(txt,'Paste this over the block between <b>/*PARAMS-START*/</b> and <b>/*PARAMS-END*/</b> in <b>src/audio.js</b>, then rebuild — or just hand it to Claude. Imported files ride along as data URIs. Custom sounds ship too (unwired until the engine calls them).','');
+    seEl('seJson').select();
+    try{document.execCommand('copy');seEl('seNote').innerHTML+=' <b>Copied ✓</b>';}catch(e){}
+  });
+  seEl('seImport').addEventListener('click',()=>{
+    const ta=seEl('seJson');
+    if(ta.hidden||ta.dataset.mode!=='import'){
+      seShowIO('','Paste an exported block (or bare JSON) here, then press Import again.','import');ta.focus();return;}
+    try{
+      const txt=ta.value.trim().replace(/^const\s+DEFAULT_P\s*=/,'').replace(/;\s*$/,'');
+      KSAudio.setParams(Function('return ('+txt+')')());
+      ta.dataset.mode='';seEl('seNote').textContent='Imported ✓';seBuildList();seBuildPanel();
+    }catch(e){seEl('seNote').textContent='Could not parse that — check the block and try again.';}
+  });
+  seEl('seResetAll').addEventListener('click',()=>{
+    if(!confirm('Reset every sound to shipped defaults? Custom sounds are removed too.'))return;
+    const cur=seP.sounds;for(const k of Object.keys(cur))if(!SE_SLOTS.includes(k))delete cur[k];
+    KSAudio.setParams(KSAudio.getDefaults());KSAudio.music.stop();
+    seSel='reveal';seBuildList();seBuildPanel();seEl('seNote').textContent='All sounds reset ✓';
+  });
+  // ---- 🗺 hear it in context: boot any realm, return here ----
+  function seTestRealm(){
+    const i=+seEl('seRealm').value;
+    seReturnFn=showSndEdit;
+    startLevel(i);
+    seReturnFn=showSndEdit;   // startLevel clears edReturn only; keep ours armed
+  }
+  seEl('seTestBtn').addEventListener('click',seTestRealm);
+  // ---- ✨ Design with AI: authors whole recipes, not just numbers ----
+  const SE_AI_SPEC=`You are the sound designer for Kingdom Sweeper, a fantasy Minesweeper. Every sound is a RECIPE: a JSON array of layers played together, interpreted by a Web Audio engine. You can retune, completely redesign, or invent brand-new sounds by writing recipes.
+
+LAYER SCHEMA (all times in seconds from trigger; omit fields you don't need):
+{"kind":"osc"|"noise"|"pluck",
+ "at":0, "dur":0.5, "level":0.2, "attack":0.01, "sustain":0,
+ osc only: "wave":"sine|square|sawtooth|triangle", "freq":440 or "midi":69, "detune":cents,
+   "pitch":[{"t":0,"hz":300},{"t":0.3,"hz":70,"exp":true}]  (frequency path),
+   "bend":{"mul":0.82,"t":0.07}  (shorthand: quick pitch dip),
+   "lfo":{"rate":16,"depth":14}  (growl/vibrato), "dist":true  (waveshaper grit),
+ osc+noise: "filter":{"type":"lowpass|highpass|bandpass|notch","freq":1200,"q":1,
+   "env":[{"t":0,"hz":300},{"t":0.35,"hz":2500,"exp":true}]},
+ pluck only: "midi":74, "damp":0.99–0.9995  (Karplus–Strong string; higher damp rings longer),
+ sequences: "notes":[74,77,79] or [[74,0],[77,0.12]] with "gap":0.06, "noteShift":12, "randAt":0.008,
+   "hzNotes":[520,455] (raw Hz), "tones":[[2500,0.14],[3970,0.09]] with "toneMul","levelMul" (bell partials),
+   "repeat":{"times":6,"spread":0.5} with "freqRand":3000 (scattered crackles),
+   "scaleWithArg":true (cascade only: note count follows tiles opened)}
+
+LIMITS (enforced): ≤16 layers, dur ≤8s, level ≤1.5, freq 20–14000, ≤24 notes, ≤16 repeats.
+
+SOUND DESIGN CRAFT: layer a body (low osc/noise), a transient (short bright noise/click), and a character element (pitch bend, LFO growl, bell partials, pluck). Percussive = short attack + exp pitch drop. Magical = detuned sines + shimmer octaves. Metallic = inharmonic tones. Beastly = distorted saw + slow LFO + bandpass "mouth" env. Keep UI sounds quiet (level ≤0.15), impacts strong (0.3–0.8).
+
+RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"recipe":[...]}}} — multiple sounds allowed; NEW names create NEW sounds (letters/digits/underscore). Music tempo/volume via {"music":{"level":0–1,"villageBpm":60–140,"keepBpm":50–110}}. Always return a sound's FULL recipe (recipes replace wholesale). NEVER include "sample" fields.`;
+  async function seAI(){
+    const key=seEl('seKey').value.trim(),req=seEl('sePrompt').value.trim(),btn=seEl('seAIBtn');
+    if(!key){seEl('seNote').innerHTML='<span class="bad">✖ Paste an Anthropic API key first (kept in memory only, never saved).</span>';return;}
+    if(!req){seEl('seNote').innerHTML='<span class="bad">✖ Describe the sound you want first.</span>';return;}
+    btn.disabled=true;btn.textContent='✨ Designing…';
+    const bare={};for(const k in seP.sounds)bare[k]={recipe:seP.sounds[k].recipe,usesImportedFile:!!seP.sounds[k].sample};
+    const user='Current sounds (game slots: '+SE_SLOTS.join(', ')+'; the rest are custom):\n'
+      +JSON.stringify(bare)+'\n\nMusic: '+JSON.stringify({level:seP.music.level,villageBpm:seP.music.villageBpm,keepBpm:seP.music.keepBpm})
+      +'\n\nSelected sound: '+seSel+'\nRequest: '+req;
+    try{
+      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{
+        'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,system:SE_AI_SPEC,
+          messages:[{role:'user',content:user}]})});
+      const data=await r.json();
+      if(data.error)throw new Error(data.error.message||('API error '+r.status));
+      const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+      const a=txt.indexOf('{'),b=txt.lastIndexOf('}');
+      if(a<0||b<a)throw new Error('no JSON in the response');
+      const obj=Function('return ('+txt.slice(a,b+1)+')')();
+      if(obj.sounds)for(const k in obj.sounds){delete obj.sounds[k].sample;
+        if(!/^[a-zA-Z]\w{0,31}$/.test(k))delete obj.sounds[k];}
+      if(obj.music){delete obj.music.villageSample;delete obj.music.keepSample;}
+      KSAudio.setParams(obj);
+      const touched=Object.keys(obj.sounds||{});
+      seEl('seNote').textContent='AI '+(touched.length?('designed: '+touched.join(', ')):'updated music')+' ✓';
+      if(touched.length)seSel=touched[0];
+      seBuildList();seBuildPanel();
+      if(touched.length)sePlay(touched[0]);   // hear the design immediately
+    }catch(err){
+      seEl('seNote').innerHTML='<span class="bad">✖ AI design failed: '+String(err.message).replace(/</g,'&lt;')+'</span> — if this is a network/CORS error while running from file://, serve it instead: <b>python3 -m http.server</b>, then open via localhost.';
+    }
+    btn.disabled=false;btn.textContent='✨ Design with AI';
+  }
+  seEl('seAIBtn').addEventListener('click',seAI);
+  function showSndEdit(){
+    KSAudio.music.stop();hideAllScreens();seEl('sndedit').hidden=false;
+    seReturnFn=null;
+    const ek=document.getElementById('edKey');   // share the forge's key if one is pasted
+    if(ek&&ek.value&&!seEl('seKey').value)seEl('seKey').value=ek.value;
+    const sel=seEl('seRealm');
+    if(!sel.options.length)LEVELS.forEach((lv,i)=>{const o=document.createElement('option');o.value=i;o.textContent=lv.name;sel.appendChild(o);});
+    seBuildList();seBuildPanel();
+  }
+  seEl('toSndEdit').addEventListener('click',showSndEdit);
+  seEl('seBack').addEventListener('click',showLevelSelect);
+  window.KSAudio=KSAudio;   // dev builds only: lets tests and the console reach the live params
   
 
 })();
