@@ -569,6 +569,8 @@
   #artbrief .ab-head b{color:var(--gold); font-size:13px;}
   #artbrief .ab-note{opacity:.55; font-size:10px;}
   #artbrief .ab-btns{display:flex; gap:6px; flex-wrap:wrap; margin:6px 0;}
+  #artbrief .ab-sec{margin:8px 0 3px; color:var(--gold); font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+    border-bottom:1px solid #1d3833; padding-bottom:2px;}
   #artbrief button{background:#16302b; color:#cfe6df; border:1px solid #2c4a44; border-radius:6px;
     font:11px monospace; padding:4px 10px; cursor:pointer;}
   #artbrief button:hover{background:#1d3d36;}
@@ -4548,21 +4550,19 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
 
   
   // ================= ART BRIEF — DEV BUILD ONLY =================
-  // One-click handoff pack for an outside image AI (ChatGPT etc.), because "please draw our
-  // level art" without exact sizes and cell maps has produced nothing usable. Per level it
-  // generates everything the artist-AI needs, with zero game context assumed:
-  //   • a self-contained text brief (copy button) specifying the THREE assets — tile
-  //     textures, overlay, background scene — each with exact pixel dimensions computed
-  //     from this level's grid, style rules, and the placement JSON pre-filled so the AI
-  //     only paints; coordinates are never its problem
-  //   • reference-map.png — a schematic of the board drawn on canvas: every cell's terrain
-  //     group, coordinates along the edges, landmarks (chest/dragon/wizard/footholds), legend
-  //   • background-guide.png — the background canvas at its recommended size with the
-  //     board-window rectangle marked in px, so the scene gets painted around the right hole
-  // Sizes follow what already ships: overlay registered at 96 px/cell (train-knight ships
-  // ~45/cell and reads fine, 96 leaves zoom headroom), tiles 128 px square (shipped 42 px
-  // tiles look soft on retina), background from a 1600 px width with height solved so the
-  // window rect keeps the board's exact aspect (gw:gh, the overlay stretch target).
+  // v2 — the handoff pack for an outside image AI, rebuilt around what v1 taught us:
+  //   • the AI needs a NARRATIVE before specs, or it invents generic fantasy filler. Each
+  //     level gets a narrative pass (decided with Claude, stored on the level as `narrative`)
+  //     and the brief opens with it — with a loud placeholder if the pass hasn't happened.
+  //   • it needs the REAL BOARD, not a schematic: board.png is now rendered from the live
+  //     tile art + overlay at 96 px/cell — exactly the overlay's own canvas — with the
+  //     instruction to paint on top of that image and return only the additions.
+  //   • it defaults to side/isometric angles unless top-down is enforced brutally, so a
+  //     CAMERA & STYLE section leads and is repeated per asset.
+  //   • tile placement is OURS now (decided in the narrative pass, painted in-house, reused
+  //     across levels). The AI produces TWO assets — overlay + background — plus, only on
+  //     request, standalone 128px seamless textures for materials we lack. No paintTiles in
+  //     the brief anymore; facts() keeps the terrain partition for our own tile work.
   (function(){
     if(typeof document==='undefined')return;
     const STEP=CELLPX+3;                 // 45 — cell + gap, the board's registration unit
@@ -4570,12 +4570,12 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
     function facts(lv){
       const C=lv.cols,R=lv.rows,ix=(r,c)=>r*C+c,rc=i=>[Math.floor(i/C),i%C];
       const set=a=>new Set((a||[]).map(([r,c])=>ix(r,c)));
-      const water=set(lv.water),rocks=set(lv.rocks),bridge=set(lv.bridge);
+      const waterS=set(lv.water),rocksS=set(lv.rocks),bridgeS=set(lv.bridge);
       const keep=set(lv.keepTiles),castle=set(lv.castleTiles),stone=set(lv.stoneTiles),charr=set(lv.charTiles);
       const base=lv.groundTile==='stone'?'stone-ground':lv.groundTile==='char'?'charred-ground':'grass';
       const groups={},push=(g,i)=>{(groups[g]=groups[g]||[]).push(rc(i));};
       for(let i=0;i<C*R;i++){
-        if(water.has(i)||rocks.has(i)||bridge.has(i))continue;   // engine-drawn, not paintable
+        if(waterS.has(i)||rocksS.has(i)||bridgeS.has(i))continue;   // engine-drawn, not paintable
         if(keep.has(i))push('keep-stone',i);
         else if(castle.has(i))push('castle-stone',i);
         else if(stone.has(i))push('stone-patch',i);
@@ -4592,131 +4592,129 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
       if(lv.wizardNear)marks.push(['W','wizard (near)',lv.wizardNear]);
       for(const f of lv.footholds||[])marks.push(['F','foothold',f]);
       return{C,R,gw,gh,win,bgW,bgH,wr,groups,marks,
-        water:[...water].map(rc),rocks:[...rocks].map(rc),bridge:[...bridge].map(rc),
+        water:[...waterS].map(rc),rocks:[...rocksS].map(rc),bridge:[...bridgeS].map(rc),
         ovW:C*OV_CELL,ovH:R*OV_CELL,
-        noOverlay:lv.overlayFull?[]:[...water,...bridge].map(rc)};
+        noOverlay:lv.overlayFull?[]:[...waterS,...bridgeS].map(rc)};
     }
     const cellsJSON=a=>'['+a.map(p=>'['+p[0]+','+p[1]+']').join(',')+']';
+    const NARR_PLACEHOLDER='\u26a0 NARRATIVE PASS NOT DONE. Decide this level\u2019s story with Claude first '
+      +'and store it on the level (field: narrative) \u2014 without it these assets come out as generic fantasy filler.';
     function briefText(lv){
       const F=facts(lv),nm=lv.name||lv.id||'level';
-      const tex=Object.keys(F.groups);
-      const lines=[];
-      lines.push('KINGDOM SWEEPER — ART PACK BRIEF');
-      lines.push('Level: "'+nm+'" ('+(lv.id||'?')+') — '+(lv.difficulty||'')+'. '+(lv.blurb||''));
-      lines.push('Setting: a fantasy minesweeper war-board. Painterly, readable, slightly top-down;');
-      lines.push('the surrounding UI is muted forest green with gold accents — art should sit warmly in that.');
-      lines.push('');
-      lines.push('You will produce THREE PNG assets, each at the EXACT pixel size given below.');
-      lines.push('Two reference images are attached:');
-      lines.push('  1) reference-map.png — the board schematic: every cell\u2019s terrain, coordinates, landmarks.');
-      lines.push('  2) background-guide.png — the background canvas with the board-window rectangle marked.');
-      lines.push('');
-      lines.push('THE BOARD');
-      lines.push('- Grid of '+F.C+' columns \u00d7 '+F.R+' rows. Coordinates are [row, col], zero-indexed, row 0 at the TOP,');
-      lines.push('  column 0 at the LEFT — exactly as drawn in reference-map.png.');
-      if(F.water.length)lines.push('- Water cells (the game draws these itself — never paint them): '+cellsJSON(F.water));
-      if(F.rocks.length)lines.push('- Rock cells (game-drawn): '+cellsJSON(F.rocks));
-      if(F.bridge.length)lines.push('- Bridge cells (game-drawn): '+cellsJSON(F.bridge));
-      if(F.marks.length)lines.push('- Landmarks: '+F.marks.map(m=>m[1]+' at ['+m[2][0]+','+m[2][1]+']').join(', '));
-      lines.push('');
-      lines.push('\u2550\u2550\u2550\u2550 ASSET 1 \u2014 TILE TEXTURES \u2550\u2550\u2550\u2550');
-      lines.push('One square PNG per texture named below, each EXACTLY '+TILE_REC+'\u00d7'+TILE_REC+' px, FULLY OPAQUE.');
-      lines.push('Style: pure ground seen from above — one square of terrain, soft painterly texture, gentle');
-      lines.push('contrast. NO borders, NO outlines, NO vignette, NO objects/characters/shadows-of-things:');
-      lines.push('cells with the same texture sit side by side, so all four edges must continue seamlessly');
-      lines.push('(same tone and pattern density at every edge — think "one square meter of ground").');
-      lines.push('The game rounds the corners and auto-derives a darker "cleared" version — deliver only');
-      lines.push('the one normal state per texture.');
-      lines.push('');
-      lines.push('Textures needed (placements are FINAL and pre-filled below — you only paint the squares):');
-      for(const t of tex)lines.push('  \u2022 "'+t+'" \u2014 '+F.groups[t].length+' cells \u2014 '+({
-        'grass':'ordinary meadow grass',
-        'stone-ground':'fitted grey flagstones',
-        'charred-ground':'scorched black earth, embers cooled',
-        'stone-patch':'a patch of grey flagstones amid the field',
-        'castle-stone':'castle courtyard stone, worn and fitted',
-        'keep-stone':'the keep\u2019s stone \u2014 darker, ominous, battle-scarred'}[t]||'terrain patch'));
-      lines.push('');
-      lines.push('Return this JSON with the images (keep the names in sync; placements copy verbatim):');
-      lines.push('"customTiles": {'+tex.map(t=>'"'+t+'": "<data URI of '+t+'.png>"').join(', ')+'},');
-      lines.push('"paintTiles": {'+tex.map(t=>'"'+t+'": '+cellsJSON(F.groups[t])).join(', ')+'}');
-      lines.push('');
-      lines.push('\u2550\u2550\u2550\u2550 ASSET 2 \u2014 OVERLAY \u2550\u2550\u2550\u2550');
-      lines.push('ONE PNG, EXACTLY '+F.ovW+'\u00d7'+F.ovH+' px, WITH transparency (mostly transparent).');
-      lines.push('It is laid over the whole grid in perfect register: cell [r,c] is the '+OV_CELL+'\u00d7'+OV_CELL+' px square');
-      lines.push('at x = c\u00d7'+OV_CELL+', y = r\u00d7'+OV_CELL+' (top-left origin \u2014 same map as reference-map.png).');
-      lines.push('What it is: the decoration pass painted ON TOP of the ground tiles \u2014 canopy shadow creeping');
-      lines.push('in from tree lines, roots, moss, mist, path wear, scorch marks, fallen leaves. It is what');
-      lines.push('turns a grid of ground squares into one continuous place.');
-      lines.push('Rules:');
-      lines.push('- Decoration should touch roughly a third of the board; the rest stays fully transparent.');
-      lines.push('- Keep the CENTER of every cell readable \u2014 the game renders numbers and creatures there.');
-      lines.push('  Let decoration live along cell edges and board edges, not on cell centers.');
-      if(F.noOverlay.length)lines.push('- Leave these cells fully transparent (water/bridge \u2014 the game clips the overlay there): '+cellsJSON(F.noOverlay));
-      lines.push('- Paint at full strength; the game fades the overlay per cell as the player clears ground.');
-      lines.push('Return as: "overlayImage": "<data URI>"');
-      lines.push('');
-      lines.push('\u2550\u2550\u2550\u2550 ASSET 3 \u2014 BACKGROUND SCENE \u2550\u2550\u2550\u2550');
-      lines.push('ONE PNG, EXACTLY '+F.bgW+'\u00d7'+F.bgH+' px, FULLY OPAQUE.');
-      lines.push('This is the realm itself: one painting of the place the battle happens in, seen from above');
-      lines.push('at a slight angle. The game cuts a see-through WINDOW where the board sits: the rectangle');
-      lines.push('at x='+F.wr[0]+', y='+F.wr[1]+', size '+F.wr[2]+'\u00d7'+F.wr[3]+' px \u2014 marked in background-guide.png.');
-      lines.push('Rules:');
-      lines.push('- INSIDE the window: plain, calm battlefield ground only. It ends up ~95% covered by tiles;');
-      lines.push('  detail there is wasted and whatever peeks through must not fight the board.');
-      lines.push('- AROUND the window: the actual scene \u2014 tree lines, river banks, walls, tents, mountains.');
-      lines.push('  This ring is where the art lives. Composition should point at the board, not away from it.');
-      lines.push('- OUTER EDGES: end in flat, calm, fully opaque ground. The game samples the flattest patch');
-      lines.push('  and repeats it outward to fill any screen size \u2014 busy edges break that illusion.');
-      lines.push('- Do NOT pre-darken or vignette; the game applies its own veil so UI reads on top.');
-      lines.push('Return as: "borderImage": "<data URI>", "borderWindow": ['+F.win.join(', ')+']');
-      lines.push('');
-      lines.push('DELIVERY');
-      lines.push('Reply with the three PNGs as downloadable files plus one JSON object containing exactly:');
-      lines.push('borderImage, borderWindow, overlayImage, customTiles, paintTiles (values as specified above).');
-      lines.push('We import it in the game\u2019s level editor; alignment fine-tuning happens on our side \u2014');
-      lines.push('your job is exact SIZES and the style rules, not pixel-perfect placement.');
-      return lines.join('\n');
+      const L=[];
+      L.push('KINGDOM SWEEPER \u2014 ART BRIEF');
+      L.push('Level: "'+nm+'" ('+(lv.id||'?')+') \u2014 '+(lv.difficulty||'')+'. '+(lv.blurb||''));
+      L.push('');
+      L.push('NARRATIVE \u2014 the scene you are illustrating. Every choice below serves this:');
+      L.push(lv.narrative||NARR_PLACEHOLDER);
+      L.push('');
+      L.push('You will produce TWO PNG assets at the EXACT sizes given. Attached:');
+      L.push('  \u2022 board.png \u2014 the level EXACTLY as it looks in game. It is your base image.');
+      L.push('  \u2022 background-guide.png \u2014 the background canvas with the board window marked.');
+      L.push('');
+      L.push('CAMERA & STYLE \u2014 READ FIRST. APPLIES TO EVERYTHING.');
+      L.push('- STRAIGHT TOP-DOWN. 90\u00b0 overhead, orthographic map view; the ground plane fills the frame.');
+      L.push('- NO horizon. NO sky. NO perspective, isometric, 3/4 or side angle. The test: if the SIDE or');
+      L.push('  FACADE of anything is visible, or far things are smaller than near things, it is WRONG \u2014 redo it.');
+      L.push('- From straight above: a tree is a canopy disc; a wall is its top edge plus a cast shadow;');
+      L.push('  a tent is its roof shape; a person is head-and-shoulders. Shadows all fall one direction.');
+      L.push('- Match board.png: same palette, same light, same painterly softness. You are ADDING to an');
+      L.push('  existing picture, never restyling it.');
+      L.push('- No text, no watermark, no frame or border, no vignette.');
+      L.push('');
+      L.push('THE BOARD (board.png)');
+      L.push('- '+F.C+' columns \u00d7 '+F.R+' rows. Coordinates [row, col], zero-indexed, row 0 at the TOP, col 0 LEFT.');
+      L.push('- board.png is '+F.ovW+'\u00d7'+F.ovH+' px at '+OV_CELL+' px per cell: cell [r,c] is the '+OV_CELL+'\u00d7'+OV_CELL+' px square at');
+      L.push('  x = c\u00d7'+OV_CELL+', y = r\u00d7'+OV_CELL+'.');
+      if(F.marks.length)L.push('- Landmarks on the field: '+F.marks.map(m=>m[1]+' at ['+m[2][0]+','+m[2][1]+']').join(', ')+'.');
+      L.push('- The ground tiles in the picture are made in-house. Never repaint, recolor or restyle the ground.');
+      L.push('');
+      L.push('\u2550\u2550\u2550\u2550 ASSET 1 \u2014 OVERLAY (decoration layer) \u2550\u2550\u2550\u2550');
+      L.push('ONE PNG, EXACTLY '+F.ovW+'\u00d7'+F.ovH+' px \u2014 the SAME size as board.png \u2014 WITH transparency.');
+      L.push('Method: paint your decoration directly ON TOP of board.png, exactly where it should sit on');
+      L.push('the picture as attached. Then deliver ONLY YOUR ADDITIONS: everything you painted at full');
+      L.push('strength, every untouched pixel FULLY TRANSPARENT. The game layers your PNG onto the board');
+      L.push('1:1, so if it looks right painted on board.png, it is right. Top-down, as everything.');
+      L.push('What to add \u2014 whatever the NARRATIVE calls for: canopy shadow reaching in from tree lines,');
+      L.push('roots, moss, wheel ruts, hoof-churned mud, scorch, fallen banners, drifting mist.');
+      L.push('Rules:');
+      L.push('- Decoration touches roughly a THIRD of the board; the rest stays fully transparent.');
+      L.push('- Keep the CENTER of every cell clear \u2014 the game draws numbers and creatures there.');
+      L.push('  Decorate along cell edges and the board\u2019s rim, never over cell centers.');
+      if(F.noOverlay.length)L.push('- Leave these cells completely untouched (water/bridge \u2014 the game clips there anyway): '+cellsJSON(F.noOverlay));
+      L.push('- Paint at full strength; all fading as the player clears ground is done by the game.');
+      L.push('Return as: "overlayImage": "<data URI>"');
+      L.push('');
+      L.push('\u2550\u2550\u2550\u2550 ASSET 2 \u2014 BACKGROUND SCENE \u2550\u2550\u2550\u2550');
+      L.push('ONE PNG, EXACTLY '+F.bgW+'\u00d7'+F.bgH+' px, FULLY OPAQUE. SAME straight top-down camera \u2014 the realm');
+      L.push('from directly above, like a painted map. No sky, no horizon, ground everywhere.');
+      L.push('The game cuts a see-through WINDOW where the board sits: the rectangle at x='+F.wr[0]+', y='+F.wr[1]+',');
+      L.push('size '+F.wr[2]+'\u00d7'+F.wr[3]+' px \u2014 marked in background-guide.png.');
+      L.push('Rules:');
+      L.push('- INSIDE the window: plain, calm ground only, continuous with board.png\u2019s ground \u2014 it ends up');
+      L.push('  ~95% covered by tiles, so detail there is wasted and must not fight the board.');
+      L.push('- AROUND the window: the NARRATIVE\u2019s world seen from above \u2014 this ring is where the art lives.');
+      L.push('  Composition points inward at the board.');
+      L.push('- OUTER EDGES: end in flat, calm, fully opaque ground \u2014 the game samples the flattest patch');
+      L.push('  and repeats it outward to fill any screen; busy edges break that.');
+      L.push('- Do NOT pre-darken or vignette; the game applies its own veil.');
+      L.push('Return as: "borderImage": "<data URI>", "borderWindow": ['+F.win.join(', ')+']');
+      L.push('');
+      L.push('NEED A NEW GROUND MATERIAL?');
+      L.push('Ground types are placed in-house and reused across levels \u2014 do NOT paint ground into the');
+      L.push('overlay. If the narrative needs a material the board lacks (mud, snow, sand...), say so and');
+      L.push('deliver it separately: one '+TILE_REC+'\u00d7'+TILE_REC+' px top-down texture per material, fully opaque,');
+      L.push('seamless at all four edges, no borders or objects. We place it.');
+      L.push('');
+      L.push('DELIVERY');
+      L.push('Two PNGs as downloadable files plus one JSON object with exactly: overlayImage, borderImage,');
+      L.push('borderWindow (values as above). Exact SIZES and the camera are the contract; placement');
+      L.push('fine-tuning happens on our side.');
+      return L.join('\n');
     }
-    // ---- reference-map.png: the schematic the brief keeps pointing at ----
-    const GCOL={'grass':'#47703f','stone-ground':'#7b8288','charred-ground':'#38302b',
-      'stone-patch':'#7b8288','castle-stone':'#66788c','keep-stone':'#8a4040'};
-    function refMapURL(lv){
+    // ---- board.png: the level exactly as rendered, at the overlay's own scale ----
+    // Rebuilt from the live render state (hiddenVariant / custCells / water / bridge / TILES),
+    // so it is only available for the level currently on the board \u2014 which is also the only
+    // honest source: build.py never sees composed art, and the DOM can't be screenshotted from
+    // inside the page. Overlay is composited at its hidden-state opacity with water/bridge
+    // re-drawn on top, which is exactly what the per-cell clip amounts to on a fresh board.
+    function loadImg(src){return new Promise(res=>{try{
+      const im=new Image(); const t=setTimeout(()=>res(null),2500);
+      im.onload=()=>{clearTimeout(t);res(im)}; im.onerror=()=>{clearTimeout(t);res(null)};
+      im.src=src;}catch(e){res(null)}});}
+    async function boardShotURL(lv){
       try{
-        const F=facts(lv),CS=36,M=34,LG=F.marks.length?86:56;
-        const cv=document.createElement('canvas');
-        cv.width=M+F.C*CS+12; cv.height=M+F.R*CS+LG;
+        if(lv!==currentLevel)return null;                       // needs the live board
+        const F=facts(lv),px=OV_CELL;
+        const cv=document.createElement('canvas'); cv.width=F.ovW; cv.height=F.ovH;
         const x=cv.getContext('2d'); if(!x)return null;
-        x.fillStyle='#101d1a'; x.fillRect(0,0,cv.width,cv.height);
-        x.font='bold 12px monospace'; x.fillStyle='#ffd479'; x.textAlign='left';
-        x.fillText((lv.name||lv.id||'level')+' \u2014 '+F.C+'\u00d7'+F.R+' \u2014 [row,col], row 0 top',6,16);
-        const fill=new Map();
-        const put=(a,c)=>{for(const[r,cc]of a)fill.set(r*F.C+cc,c);};
-        for(const g in F.groups)put(F.groups[g],GCOL[g]||'#555');
-        put(F.water,'#2f6f8f'); put(F.rocks,'#6b5a47'); put(F.bridge,'#b3854d');
-        for(let r=0;r<F.R;r++)for(let c=0;c<F.C;c++){
-          x.fillStyle=fill.get(r*F.C+c)||'#47703f';
-          x.fillRect(M+c*CS,M+r*CS,CS-1,CS-1);}
-        x.fillStyle='#9fb8b0'; x.font='10px monospace'; x.textAlign='center';
-        for(let c=0;c<F.C;c++)x.fillText(String(c),M+c*CS+CS/2,M-5);
-        x.textAlign='right';
-        for(let r=0;r<F.R;r++)x.fillText(String(r),M-5,M+r*CS+CS/2+3);
-        x.textAlign='center'; x.font='bold 16px monospace';
-        for(const[ch,,p]of F.marks){
-          x.fillStyle='#08120f';
-          x.beginPath();x.arc(M+p[1]*CS+CS/2,M+p[0]*CS+CS/2,11,0,7);x.fill();
-          x.fillStyle='#ffd479';
-          x.fillText(ch,M+p[1]*CS+CS/2,M+p[0]*CS+CS/2+5);}
-        let lx=M,ly=M+F.R*CS+18;                        // legend
-        const leg=[...Object.keys(F.groups).map(g=>[g,GCOL[g]||'#555']),
-          ...(F.water.length?[['water','#2f6f8f']]:[]),...(F.rocks.length?[['rock','#6b5a47']]:[]),
-          ...(F.bridge.length?[['bridge','#b3854d']]:[])];
-        x.font='10px monospace'; x.textAlign='left';
-        for(const[nm,c]of leg){x.fillStyle=c;x.fillRect(lx,ly,10,10);
-          x.fillStyle='#cfe6df';x.fillText(nm,lx+14,ly+9);lx+=24+nm.length*6;
-          if(lx>cv.width-90){lx=M;ly+=16;}}
-        if(F.marks.length){x.fillStyle='#cfe6df';
-          x.fillText([...new Set(F.marks.map(m=>m[0]+'='+m[1]))].join('  '),M,ly+24);}
+        x.fillStyle='#101d1a'; x.fillRect(0,0,F.ovW,F.ovH);
+        const keyAt=i=>{const r=Math.floor(i/F.C);
+          if(water.has(i))return (lv.terrainKind==='rock'?'rock':'water')+(1+(i*7+r)%3);
+          if(bridge.has(i))return 'bridge';
+          return custCells.get(i)||hiddenVariant[i];};
+        // if a tile image fails to decode (headless canvas can't do SVG), fall back to the
+        // family's palette ground color — the shot degrades to flat-color cells, never holes
+        const fallback=k=>k.startsWith('water')?_WP.w:k.startsWith('rock')?_RP.r
+          :k.startsWith('bridge')?_BP.H:k.startsWith('stone')?_SP.G:k.startsWith('char')?_CP.G
+          :k.startsWith('cust_')?'#6d6d5f':_GP.G;
+        const keys=new Set(); for(let i=0;i<F.C*F.R;i++)keys.add(keyAt(i));
+        const imgs={}; await Promise.all([...keys].map(async k=>{imgs[k]=TILES[k]?await loadImg(TILES[k]):null;}));
+        const drawCells=which=>{for(let i=0;i<F.C*F.R;i++){
+          if(which&&!which(i))continue;
+          const k=keyAt(i),im=imgs[k],cx=(i%F.C)*px,cy=Math.floor(i/F.C)*px;
+          if(im)x.drawImage(im,cx,cy,px,px);
+          else{x.fillStyle=fallback(k);x.fillRect(cx,cy,px,px);}}};
+        drawCells(null);
+        const ov=levelOverlay(lv), ovImg=ov?await loadImg(ov):null;
+        if(ovImg){
+          const sc=lv.ovScale||1, W=F.ovW*sc, H=F.ovH*sc;
+          const ox=(lv.ovX||0)*F.ovW+(1-sc)*F.ovW/2, oy=(lv.ovY||0)*F.ovH+(1-sc)*F.ovH/2;
+          x.globalAlpha=lv.ovHidden??OV_OP_HIDDEN;
+          x.drawImage(ovImg,ox,oy,W,H);
+          x.globalAlpha=1;
+          if(!lv.overlayFull)drawCells(i=>water.has(i)||bridge.has(i));   // clip = redraw on top
+        }
         return cv.toDataURL('image/png');
       }catch(e){return null;}
     }
@@ -4733,7 +4731,7 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
         x.strokeStyle='#ffd479'; x.setLineDash([8,6]); x.lineWidth=2;
         x.strokeRect(wr[0],wr[1],wr[2],wr[3]); x.setLineDash([]);
         x.fillStyle='#ffd479'; x.font='bold 13px monospace'; x.textAlign='left';
-        x.fillText('canvas '+F.bgW+'\u00d7'+F.bgH+' px',8,18);
+        x.fillText('canvas '+F.bgW+'\u00d7'+F.bgH+' px \u2014 straight top-down, no sky',8,18);
         x.textAlign='center';
         x.fillText('BOARD WINDOW',wr[0]+wr[2]/2,wr[1]+wr[3]/2-16);
         x.fillText(F.wr[2]+'\u00d7'+F.wr[3]+' px at ('+F.wr[0]+','+F.wr[1]+')',wr[0]+wr[2]/2,wr[1]+wr[3]/2+2);
@@ -4748,25 +4746,42 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
       document.body.appendChild(a);a.click();a.remove();}
     const slug=lv=>(lv.id||lv.name||'level').toLowerCase().replace(/[^a-z0-9]+/g,'-');
     // ---- panel ----
-    let panel=null,box=null;
+    let panel=null,box=null,narr=null;
     function refresh(){
       const lv=currentLevel;
-      if(!lv){box.value='Load a level first \u2014 the brief reads the current realm.';return;}
+      if(!lv){box.value='Load a level first \u2014 the brief reads the current realm.';
+        narr.value='';narr.disabled=true;return;}
+      narr.disabled=false;
+      if(document.activeElement!==narr)narr.value=lv.narrative||'';
       box.value=briefText(lv);}
     function build(){
       panel=document.createElement('div');panel.id='artbrief';panel.hidden=true;
       panel.innerHTML='<div class="ab-head"><b>\ud83d\uddbc Art Brief</b>'
-        +'<span class="ab-note">handoff pack for an image AI \u2014 copy the brief, attach both PNGs</span></div>';
+        +'<span class="ab-note">per-level flow: 1) narrative pass with Claude \u2192 box below \u00b7 '
+        +'2) Claude paints/reuses tiles \u00b7 3) send GPT the brief + board.png + background-guide.png</span></div>';
+      const nl=document.createElement('div');nl.className='ab-sec';
+      nl.textContent='Narrative (stored on the level as `narrative` \u2014 paste it to Claude to commit)';
+      panel.appendChild(nl);
+      narr=document.createElement('textarea');narr.rows=4;
+      narr.placeholder='Decide the level\u2019s story with Claude, paste it here \u2014 it leads the brief.';
+      narr.addEventListener('input',()=>{if(currentLevel){currentLevel.narrative=narr.value.trim()||undefined;
+        box.value=briefText(currentLevel);}});
+      panel.appendChild(narr);
       const row=document.createElement('div');row.className='ab-btns';
       const mk=(t,fn)=>{const b=document.createElement('button');b.textContent=t;
         b.addEventListener('click',fn);row.appendChild(b);return b;};
       const cp=mk('\ud83d\udccb Copy brief',()=>{if(!currentLevel)return;refresh();box.select();
         try{navigator.clipboard?navigator.clipboard.writeText(box.value):document.execCommand('copy');}catch(e){}
         cp.textContent='Copied \u2713';setTimeout(()=>cp.textContent='\ud83d\udccb Copy brief',1200);});
-      mk('\ud83d\uddfa reference-map.png',()=>{if(currentLevel)download(refMapURL(currentLevel),slug(currentLevel)+'-reference-map.png');});
+      const bs=mk('\ud83d\udcf8 board.png',async()=>{if(!currentLevel)return;
+        bs.textContent='rendering\u2026';
+        const u=await boardShotURL(currentLevel);
+        bs.textContent='\ud83d\udcf8 board.png';
+        if(u)download(u,slug(currentLevel)+'-board.png');
+        else{bs.textContent='render failed';setTimeout(()=>bs.textContent='\ud83d\udcf8 board.png',1500);}});
       mk('\ud83c\udfde background-guide.png',()=>{if(currentLevel)download(bgGuideURL(currentLevel),slug(currentLevel)+'-background-guide.png');});
       panel.appendChild(row);
-      box=document.createElement('textarea');box.readOnly=true;box.rows=16;
+      box=document.createElement('textarea');box.readOnly=true;box.rows=14;
       box.addEventListener('focus',()=>box.select());
       panel.appendChild(box);
       document.body.appendChild(panel);}
@@ -4778,7 +4793,8 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
       b.addEventListener('click',toggle);document.body.appendChild(b);
       document.addEventListener('keydown',e=>{if(e.key==='F8'){e.preventDefault();toggle();}});}
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-    window.KSArtBrief={facts,briefText,refMapURL,bgGuideURL};   // test hook
+    window.KSArtBrief={facts,briefText,boardShotURL,bgGuideURL};   // test hook
+    window.KSArtBriefShotProbe=()=>boardShotURL(currentLevel);       // test hook: live-level shot
   })();
   
 
