@@ -4628,12 +4628,22 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
       L.push('');
       L.push('You will produce FOUR PNG images, IN THIS ORDER. Step 1 is the master; steps 2\u20134 are');
       L.push('that same picture decomposed into layers \u2014 they must recompose into step 1.');
-      L.push('Attached:');
-      L.push('  \u2022 board.png \u2014 the level as it looks in game today (before your art).');
-      L.push('  \u2022 tile-palette.png \u2014 the ONLY ground materials that exist, with their names.');
-      L.push('  \u2022 background-guide.png \u2014 the background canvas with the board window marked.');
       L.push('');
-      L.push('CAMERA & STYLE \u2014 READ FIRST. APPLIES TO ALL FOUR IMAGES.');
+      L.push('THE MOST IMPORTANT RULE \u2014 YOU ARE EDITING OUR PICTURES, NOT INVENTING NEW ONES.');
+      L.push('Every image you deliver STARTS FROM an attached image loaded onto your canvas. You paint');
+      L.push('over and around what is already there. An image that does not visibly contain the attached');
+      L.push('base underneath \u2014 same board, same position, same size \u2014 is irrelevant to the game and is');
+      L.push('rejected, however good it looks. Before delivering ANY image, check it: laid over its base');
+      L.push('at 100% size, does every board cell line up exactly? If not, redo it.');
+      L.push('');
+      L.push('Attached:');
+      L.push('  \u2022 concept-base.png \u2014 the full canvas with the REAL board already placed in its window.');
+      L.push('    THIS IS YOUR STEP 1 CANVAS. Do not start from a blank image.');
+      L.push('  \u2022 board.png \u2014 the board alone, exactly as it looks in game. Base for steps 2 and 3.');
+      L.push('  \u2022 tile-palette.png \u2014 the ONLY ground materials that exist, with their names.');
+      L.push('  \u2022 background-guide.png \u2014 reference only: the window rectangle measurements.');
+      L.push('');
+      L.push('CAMERA & STYLE \u2014 APPLIES TO ALL FOUR IMAGES.');
       L.push('- STRAIGHT TOP-DOWN. 90\u00b0 overhead, orthographic map view; the ground plane fills the frame.');
       L.push('- NO horizon. NO sky. NO perspective, isometric, 3/4 or side angle. The test: if the SIDE or');
       L.push('  FACADE of anything is visible, or far things are smaller than near things, it is WRONG \u2014 redo it.');
@@ -4649,17 +4659,21 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
       if(F.water.length)L.push('- Water cells (the game draws these \u2014 leave them alone in every image): '+cellsJSON(F.water));
       if(F.bridge.length)L.push('- Bridge cells (game-drawn too): '+cellsJSON(F.bridge));
       L.push('');
-      L.push('\u2550\u2550\u2550\u2550 STEP 1 \u2014 CONCEPT (the whole look) \u2550\u2550\u2550\u2550');
+      L.push('\u2550\u2550\u2550\u2550 STEP 1 \u2014 CONCEPT (paint OVER concept-base.png) \u2550\u2550\u2550\u2550');
       L.push('ONE PNG, EXACTLY '+F.bgW+'\u00d7'+F.bgH+' px, FULLY OPAQUE. Top-down, like a painted map.');
-      L.push('Everything together, following the NARRATIVE: the surroundings filling the canvas, and inside');
-      L.push('the board window (the rectangle at x='+F.wr[0]+', y='+F.wr[1]+', size '+F.wr[2]+'\u00d7'+F.wr[3]+' px \u2014 see background-guide.png)');
-      L.push('the battlefield itself: ground built ONLY from the materials in tile-palette.png, decoration on');
-      L.push('top. This is the target everything else is cut from. Take your time here \u2014 steps 2\u20134 are mechanical.');
+      L.push('Method: load concept-base.png. The board is already in it, in its window at x='+F.wr[0]+', y='+F.wr[1]+',');
+      L.push('size '+F.wr[2]+'\u00d7'+F.wr[3]+' px. Now paint the NARRATIVE\u2019s world around it: replace the flat green with');
+      L.push('the surroundings, add decoration on and around the battlefield. The board underneath must');
+      L.push('stay recognizable \u2014 same tiles, same position, same size. You may repaint its ground only');
+      L.push('with materials from tile-palette.png; you may NOT move, rescale, crop or reinvent it.');
+      L.push('This is the target everything else is cut from. Take your time here \u2014 steps 2\u20134 are mechanical.');
       L.push('');
-      L.push('\u2550\u2550\u2550\u2550 STEP 2 \u2014 TILE MAP (ground only) \u2550\u2550\u2550\u2550');
-      L.push('ONE PNG, EXACTLY '+F.ovW+'\u00d7'+F.ovH+' px, FULLY OPAQUE. The board\u2019s ground from your concept \u2014 NOTHING else.');
+      L.push('\u2550\u2550\u2550\u2550 STEP 2 \u2014 TILE MAP (recolor board.png, ground only) \u2550\u2550\u2550\u2550');
+      L.push('ONE PNG, EXACTLY '+F.ovW+'\u00d7'+F.ovH+' px, FULLY OPAQUE.');
+      L.push('Method: load board.png. For each cell, fill it edge-to-edge with EXACTLY ONE material from');
+      L.push('tile-palette.png \u2014 the one your concept gives that cell: '+mats.join(', ')+'. Nothing else changes \u2014');
+      L.push('same grid, same size, cells exactly where board.png has them.');
       L.push('This is a MAP, not a painting. Hard rules:');
-      L.push('- Each cell is filled edge-to-edge with EXACTLY ONE material from tile-palette.png: '+mats.join(', ')+'.');
       L.push('- One material per cell, flat and grid-aligned \u2014 no blending across a cell, no half cells.');
       L.push('- Make each material UNMISTAKABLE \u2014 exaggerate the color differences; we machine-read this');
       L.push('  image cell by cell and rebuild it from the real game tiles, so ambiguity = wrong tiles.');
@@ -4668,21 +4682,23 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
       L.push('  material (snow, mud...), STOP and ask first \u2014 if approved, also deliver it as a separate');
       L.push('  '+TILE_REC+'\u00d7'+TILE_REC+' px seamless top-down texture, and only then use it in the map.');
       L.push('');
-      L.push('\u2550\u2550\u2550\u2550 STEP 3 \u2014 OVERLAY (decoration only) \u2550\u2550\u2550\u2550');
+      L.push('\u2550\u2550\u2550\u2550 STEP 3 \u2014 OVERLAY (paint ON board.png, deliver the additions) \u2550\u2550\u2550\u2550');
       L.push('ONE PNG, EXACTLY '+F.ovW+'\u00d7'+F.ovH+' px, WITH transparency.');
-      L.push('Your concept\u2019s board decoration lifted off the ground: everything you painted ON the battlefield');
-      L.push('(canopy shadow, roots, wear, scorch, banners, mist) at full strength, everything else FULLY');
-      L.push('TRANSPARENT. Layered 1:1 over the board \u2014 if it sits right on your step 2 image, it is right.');
+      L.push('Method: load board.png. Paint your concept\u2019s board decoration directly onto it \u2014 canopy');
+      L.push('shadow, roots, wear, scorch, banners, mist \u2014 exactly where it sits in your concept. Then');
+      L.push('deliver ONLY the paint you added, at full strength, on a fully transparent background at');
+      L.push('the same size. The game layers it onto the board 1:1 \u2014 if it sits right on board.png, it is right.');
       L.push('- Decoration touches roughly a THIRD of the board; keep every cell\u2019s CENTER clear \u2014 the game');
       L.push('  draws numbers and creatures there. Decorate along cell edges and the board\u2019s rim.');
       if(F.noOverlay.length)L.push('- Leave these cells completely untouched: '+cellsJSON(F.noOverlay));
       L.push('- Full strength; all in-game fading is ours.');
       L.push('Return as: "overlayImage": "<data URI>"');
       L.push('');
-      L.push('\u2550\u2550\u2550\u2550 STEP 4 \u2014 BORDER (surroundings only) \u2550\u2550\u2550\u2550');
-      L.push('ONE PNG, EXACTLY '+F.bgW+'\u00d7'+F.bgH+' px, FULLY OPAQUE. Your concept with the board taken out:');
-      L.push('inside the window rectangle, plain calm ground continuous with the surroundings \u2014 the game');
-      L.push('covers it with tiles. Everything outside the window stays as in your concept.');
+      L.push('\u2550\u2550\u2550\u2550 STEP 4 \u2014 BORDER (your concept, board blanked) \u2550\u2550\u2550\u2550');
+      L.push('ONE PNG, EXACTLY '+F.bgW+'\u00d7'+F.bgH+' px, FULLY OPAQUE.');
+      L.push('Method: take YOUR OWN step 1 image. Replace everything inside the window rectangle');
+      L.push('(x='+F.wr[0]+', y='+F.wr[1]+', size '+F.wr[2]+'\u00d7'+F.wr[3]+' px) with plain calm ground continuous with the');
+      L.push('surroundings \u2014 the game covers it with tiles. Everything outside the window stays untouched.');
       L.push('- OUTER EDGES end in flat, calm, fully opaque ground \u2014 the game samples the flattest patch');
       L.push('  and repeats it outward to fill any screen.');
       L.push('- Do NOT pre-darken or vignette; the game applies its own veil.');
@@ -4760,6 +4776,24 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
         x.fillStyle='#cfe6df'; x.font='12px monospace';
         x.fillText('plain calm ground here \u2014 tiles cover it',wr[0]+wr[2]/2,wr[1]+wr[3]/2+20);
         x.fillText('scene lives in this ring \u2192 edges end in flat opaque ground (game repeats them outward)',W/2,H+17);
+        return cv.toDataURL('image/png');
+      }catch(e){return null;}
+    }
+    // ---- concept-base.png: the literal canvas GPT paints STEP 1 over ----
+    // The strongest anti-irrelevance measure is not a rule but a base image: the background
+    // canvas at full size with the REAL board render already composited into the window rect.
+    // GPT is told to load this file and paint over it — the board it must respect is already
+    // in the picture, at the right place, at the right size. Words failed; pixels won't.
+    async function conceptBaseURL(lv){
+      try{
+        const F=facts(lv);
+        const cv=document.createElement('canvas'); cv.width=F.bgW; cv.height=F.bgH;
+        const x=cv.getContext('2d'); if(!x)return null;
+        x.fillStyle='#3c5244'; x.fillRect(0,0,F.bgW,F.bgH);        // calm ground, no annotations
+        const shot=await boardShotURL(lv);
+        if(shot){const im=await loadImg(shot);
+          if(im)x.drawImage(im,F.wr[0],F.wr[1],F.wr[2],F.wr[3]);}
+        else{x.fillStyle='#46613f';x.fillRect(F.wr[0],F.wr[1],F.wr[2],F.wr[3]);}
         return cv.toDataURL('image/png');
       }catch(e){return null;}
     }
@@ -4879,6 +4913,12 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
       const cp=mk('\ud83d\udccb Copy brief',()=>{if(!currentLevel)return;refresh();box.select();
         try{navigator.clipboard?navigator.clipboard.writeText(box.value):document.execCommand('copy');}catch(e){}
         cp.textContent='Copied \u2713';setTimeout(()=>cp.textContent='\ud83d\udccb Copy brief',1200);});
+      const cb=mk('\ud83e\udde9 concept-base.png',async()=>{if(!currentLevel)return;
+        cb.textContent='rendering\u2026';
+        const u=await conceptBaseURL(currentLevel);
+        cb.textContent='\ud83e\udde9 concept-base.png';
+        if(u)download(u,slug(currentLevel)+'-concept-base.png');
+        else{cb.textContent='render failed';setTimeout(()=>cb.textContent='\ud83e\udde9 concept-base.png',1500);}});
       const bs=mk('\ud83d\udcf8 board.png',async()=>{if(!currentLevel)return;
         bs.textContent='rendering\u2026';
         const u=await boardShotURL(currentLevel);
@@ -4931,9 +4971,10 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
       b.addEventListener('click',toggle);document.body.appendChild(b);
       document.addEventListener('keydown',e=>{if(e.key==='F8'){e.preventDefault();toggle();}});}
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-    window.KSArtBrief={facts,briefText,boardShotURL,bgGuideURL,tilePaletteURL,applyTileMapURL,materials};   // test hook
+    window.KSArtBrief={facts,briefText,boardShotURL,bgGuideURL,tilePaletteURL,applyTileMapURL,materials,conceptBaseURL};   // test hook
     window.KSArtBriefShotProbe=()=>boardShotURL(currentLevel);       // test hook: live-level shot
     window.KSArtBriefPaletteProbe=()=>tilePaletteURL(currentLevel);  // test hook: live-level palette
+    window.KSArtBriefBaseProbe=()=>conceptBaseURL(currentLevel);     // test hook: live-level concept base
   })();
   
 
