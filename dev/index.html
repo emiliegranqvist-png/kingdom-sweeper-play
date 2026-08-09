@@ -4618,122 +4618,79 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
       const m={}; for(const n of Object.keys(TILE_LIB))if(!/\d$/.test(n))m[n]=TILE_LIB[n];
       for(const n in (lv&&lv.customTiles)||{})m[n]=lv.customTiles[n];
       return m;}
-    function briefText(lv){
+    function msg1Text(lv){
       const F=facts(lv),nm=lv.name||lv.id||'level';
-      const mats=Object.keys(materials(lv));
       const L=[];
-      L.push('KINGDOM SWEEPER \u2014 ART BRIEF');
+      L.push('KINGDOM SWEEPER \u2014 MESSAGE 1 of 2: THE CONCEPT');
       L.push('Level: "'+nm+'" ('+(lv.id||'?')+') \u2014 '+(lv.difficulty||'')+'. '+(lv.blurb||''));
       L.push('');
-      L.push('NARRATIVE \u2014 the scene you are illustrating. Every choice below serves this:');
+      L.push('NARRATIVE \u2014 the scene you are illustrating. Every choice serves this:');
       L.push(lv.narrative||NARR_PLACEHOLDER);
       L.push('');
-      L.push('You will produce FOUR PNG images, IN THIS ORDER. Step 1 is the master; steps 2\u20134 are');
-      L.push('that same picture decomposed into layers \u2014 they must recompose into step 1.');
+      L.push('YOUR TASK \u2014 ONE IMAGE ONLY.');
+      L.push('Attached: screenshot.png \u2014 the game EXACTLY as the player sees it (board, frame, UI,');
+      L.push('dark surround) \u2014 plus style-reference images from other levels of the same game.');
+      L.push('Paint OVER screenshot.png. Keep the board and the UI exactly where they are, fully');
+      L.push('recognizable underneath \u2014 same position, same size, not redrawn, not restyled. Replace');
+      L.push('ONLY the dark surround with the NARRATIVE\u2019s world, and add decoration on and around the');
+      L.push('battlefield ground. Same aspect ratio as the screenshot; exact pixels do not matter for');
+      L.push('this image \u2014 it is the look-target we will approve before any assets are made.');
       L.push('');
-      L.push('THE MOST IMPORTANT RULE \u2014 YOU ARE EDITING OUR PICTURES, NOT INVENTING NEW ONES.');
-      L.push('Every image you deliver STARTS FROM an attached image loaded onto your canvas. You paint');
-      L.push('over and around what is already there. An image that does not visibly contain the attached');
-      L.push('base underneath \u2014 same board, same position, same size \u2014 is irrelevant to the game and is');
-      L.push('rejected, however good it looks. Before delivering ANY image, check it: laid over its base');
-      L.push('at 100% size, does every board cell line up exactly? If not, redo it.');
-      L.push('');
-      L.push('Attached:');
-      L.push('  \u2022 concept-base.png \u2014 the full canvas with the REAL board already placed in its window.');
-      L.push('    THIS IS YOUR STEP 1 CANVAS. Do not start from a blank image.');
-      L.push('  \u2022 board.png \u2014 the board alone, exactly as it looks in game. Base for steps 2 and 3.');
-      L.push('  \u2022 tile-palette.png \u2014 the ONLY ground materials that exist, with their names.');
-      L.push('  \u2022 background-guide.png \u2014 reference only: the window rectangle measurements.');
-      L.push('');
-      L.push('ART DIRECTION \u2014 APPLIES TO ALL FOUR IMAGES. IT OVERRULES YOUR HABITS.');
-      L.push('The complete art direction document is appended at the end of this brief and is');
-      L.push('AUTHORITATIVE. The style in one line: grounded, naturalistic fantasy PIXEL ART with the');
-      L.push('detail of a classic PC strategy game \u2014 flat modular board, sparse three-quarter');
-      L.push('environmental sprites, quietly colorful, hopeful, never cartoonish. Operative rules:');
-      L.push('- RENDERING: crisp hard pixel edges, NO antialiasing, NO soft digital brushwork, NO');
-      L.push('  photorealism, NO smooth gradients. Dark colored outlines. One consistent pixel density');
-      L.push('  across all four images \u2014 match the density of board.png and tile-palette.png.');
-      L.push('- PERSPECTIVE, two compatible views: the GROUND PLANE is completely flat, straight down,');
-      L.push('  no distortion. OBJECTS (trees, buildings, rocks, props) are three-quarter top-down: their');
-      L.push('  top, their front, a controlled hint of side \u2014 all at the SAME camera height and angle.');
-      L.push('  Still absolutely NO horizon, NO sky, NO vanishing perspective, NO isometric grid.');
-      L.push('- PALETTE: natural and moderately saturated \u2014 forest/moss green, olive, warm and slate');
-      L.push('  stone, weathered brown, deep blue, dark teal. Accents only where they mean something:');
-      L.push('  royal blue (kingdom), restrained gold, red-orange (fire/dragons), purple (wizards),');
-      L.push('  turquoise (magic/guidance). Never fluorescent or candy-colored.');
-      L.push('- LIGHT: soft ambient daylight, upper-left, cool natural shadows. No black shadow masses,');
-      L.push('  no sunbeams, no bloom, no orange filter.');
-      L.push('- COMPOSITION: deliberate clusters, not even spread \u2014 ONE primary landmark per level, two');
-      L.push('  or three supporting clusters, large quiet areas. The landmark carries the narrative.');
+      L.push('CAMERA & STYLE');
+      L.push('- STRAIGHT TOP-DOWN ground plane, like a painted map. Objects (trees, walls, tents) in a');
+      L.push('  consistent three-quarter top-down view: their top plus a hint of front \u2014 exactly like the');
+      L.push('  objects in the style references. NO horizon, NO sky, NO isometric grid, NO side view.');
+      L.push('  If far things are smaller than near things, it is wrong \u2014 redo it.');
+      L.push('- Match the style references: pixel-art rendering, dark colored outlines, soft daylight');
+      L.push('  from upper left, muted natural colors. You are adding to this game\u2019s world, not restyling it.');
       L.push('- No text, no watermarks, no frames, no vignettes.');
       L.push('');
-      L.push('THE BOARD');
-      L.push('- '+F.C+' columns \u00d7 '+F.R+' rows. Coordinates [row, col], zero-indexed, row 0 at the TOP, col 0 LEFT.');
-      L.push('- Board images are '+F.ovW+'\u00d7'+F.ovH+' px at '+OV_CELL+' px per cell: cell [r,c] is the '+OV_CELL+'\u00d7'+OV_CELL+' px square');
-      L.push('  at x = c\u00d7'+OV_CELL+', y = r\u00d7'+OV_CELL+'.');
-      if(F.marks.length)L.push('- Landmarks on the field: '+F.marks.map(m=>m[1]+' at ['+m[2][0]+','+m[2][1]+']').join(', ')+'.');
-      if(F.water.length)L.push('- Water cells (the game draws these \u2014 leave them alone in every image): '+cellsJSON(F.water));
-      if(F.bridge.length)L.push('- Bridge cells (game-drawn too): '+cellsJSON(F.bridge));
+      L.push('Deliver just this one image. No assets, no layers, no JSON \u2014 that is MESSAGE 2, after');
+      L.push('this concept is approved.');
+      return L.join('\n');
+    }
+    function msg2Text(lv){
+      const F=facts(lv);
+      const mats=Object.keys(materials(lv));
+      const L=[];
+      L.push('KINGDOM SWEEPER \u2014 MESSAGE 2 of 2: THE ASSETS');
+      L.push('The concept is approved. Now decompose IT \u2014 your own approved image \u2014 into game assets.');
+      L.push('Produce them ONE AT A TIME, each in its own reply, in this order. Every asset must');
+      L.push('recompose into the concept: same content, same placement, just separated into layers.');
+      L.push('Target sizes are exact; if your tool cannot output an exact size, use the closest LARGER');
+      L.push('size it offers \u2014 we rescale on import. Layer correctness matters more than pixels.');
       L.push('');
-      L.push('\u2550\u2550\u2550\u2550 STEP 1 \u2014 CONCEPT (paint OVER concept-base.png) \u2550\u2550\u2550\u2550');
-      L.push('ONE PNG, EXACTLY '+F.bgW+'\u00d7'+F.bgH+' px, FULLY OPAQUE. Top-down, like a painted map.');
-      L.push('Method: load concept-base.png. The board is already in it, in its window at x='+F.wr[0]+', y='+F.wr[1]+',');
-      L.push('size '+F.wr[2]+'\u00d7'+F.wr[3]+' px. Now paint the NARRATIVE\u2019s world around it: replace the flat green with');
-      L.push('the surroundings, add decoration on and around the battlefield. The board underneath must');
-      L.push('stay recognizable \u2014 same tiles, same position, same size. You may repaint its ground only');
-      L.push('with materials from tile-palette.png; you may NOT move, rescale, crop or reinvent it.');
-      L.push('Compose per the art direction: ONE primary landmark serving the narrative, a few supporting');
-      L.push('clusters, quiet space between \u2014 not an even spread of detail.');
-      L.push('This is the target everything else is cut from. Take your time here \u2014 steps 2\u20134 are mechanical.');
+      L.push('ASSET 1 \u2014 TILE MAP \u2014 target '+F.ovW+'\u00d7'+F.ovH+' px, fully opaque.');
+      L.push('The board\u2019s ground from your concept, as a machine-readable map: the board is '+F.C+' columns \u00d7');
+      L.push(F.R+' rows of equal square cells filling the whole image. Fill each cell edge-to-edge with');
+      L.push('EXACTLY ONE material from tile-palette.png: '+mats.join(', ')+'.');
+      L.push('- One material per cell, flat, grid-aligned. No blending, no half cells.');
+      L.push('- Exaggerate the differences between materials \u2014 we read this image cell by cell.');
+      L.push('- NO objects, shadows, decoration or creatures \u2014 those live in asset 2.');
+      L.push('- A material not in tile-palette.png is an error: STOP and ask first; if approved, also');
+      L.push('  deliver it as a separate '+TILE_REC+'\u00d7'+TILE_REC+' px seamless top-down texture.');
       L.push('');
-      L.push('\u2550\u2550\u2550\u2550 STEP 2 \u2014 TILE MAP (recolor board.png, ground only) \u2550\u2550\u2550\u2550');
-      L.push('ONE PNG, EXACTLY '+F.ovW+'\u00d7'+F.ovH+' px, FULLY OPAQUE.');
-      L.push('Method: load board.png. For each cell, fill it edge-to-edge with EXACTLY ONE material from');
-      L.push('tile-palette.png \u2014 the one your concept gives that cell: '+mats.join(', ')+'. Nothing else changes \u2014');
-      L.push('same grid, same size, cells exactly where board.png has them.');
-      L.push('This is a MAP, not a painting. Hard rules:');
-      L.push('- One material per cell, flat and grid-aligned \u2014 no blending across a cell, no half cells.');
-      L.push('- Make each material UNMISTAKABLE \u2014 exaggerate the color differences; we machine-read this');
-      L.push('  image cell by cell and rebuild it from the real game tiles, so ambiguity = wrong tiles.');
-      L.push('- NO objects, shadows, decoration, or creatures \u2014 all of that lives in step 3.');
-      L.push('- Using a material NOT in tile-palette.png is an error. If the narrative truly needs a new');
-      L.push('  material (snow, mud...), STOP and ask first \u2014 if approved, also deliver it as a separate');
-      L.push('  '+TILE_REC+'\u00d7'+TILE_REC+' px seamless top-down texture, and only then use it in the map.');
-      L.push('');
-      L.push('\u2550\u2550\u2550\u2550 STEP 3 \u2014 OVERLAY (paint ON board.png, deliver the additions) \u2550\u2550\u2550\u2550');
-      L.push('ONE PNG, EXACTLY '+F.ovW+'\u00d7'+F.ovH+' px, WITH transparency.');
-      L.push('Method: load board.png. Paint your concept\u2019s board decoration directly onto it \u2014 canopy');
-      L.push('shadow, roots, wear, scorch, banners, mist \u2014 exactly where it sits in your concept. Then');
-      L.push('deliver ONLY the paint you added, at full strength, on a fully transparent background at');
-      L.push('the same size. The game layers it onto the board 1:1 \u2014 if it sits right on board.png, it is right.');
-      L.push('- Decoration touches roughly a THIRD of the board; keep every cell\u2019s CENTER clear \u2014 the game');
-      L.push('  draws numbers and creatures there. Decorate along cell edges and the board\u2019s rim.');
+      L.push('ASSET 2 \u2014 OVERLAY \u2014 target '+F.ovW+'\u00d7'+F.ovH+' px, WITH transparency.');
+      L.push('Your concept\u2019s board decoration lifted off the ground: everything you painted ON the');
+      L.push('battlefield, at full strength, on a fully transparent background. Same placement as in');
+      L.push('the concept \u2014 laid over the board it must line up.');
+      L.push('- Keep every cell\u2019s CENTER clear \u2014 the game draws numbers and creatures there.');
       if(F.noOverlay.length)L.push('- Leave these cells completely untouched: '+cellsJSON(F.noOverlay));
       L.push('- Full strength; all in-game fading is ours.');
-      L.push('Return as: "overlayImage": "<data URI>"');
       L.push('');
-      L.push('\u2550\u2550\u2550\u2550 STEP 4 \u2014 BORDER (your concept, board blanked) \u2550\u2550\u2550\u2550');
-      L.push('ONE PNG, EXACTLY '+F.bgW+'\u00d7'+F.bgH+' px, FULLY OPAQUE.');
-      L.push('Method: take YOUR OWN step 1 image. Replace everything inside the window rectangle');
-      L.push('(x='+F.wr[0]+', y='+F.wr[1]+', size '+F.wr[2]+'\u00d7'+F.wr[3]+' px) with plain calm ground continuous with the');
-      L.push('surroundings \u2014 the game covers it with tiles. Everything outside the window stays untouched.');
-      L.push('- Per the art direction, surroundings are ISOLATED SPRITE CLUSTERS on calm dark ground');
-      L.push('  (reeds, rocks, branches, wall fragments, banners) \u2014 NOT a complete painted landscape,');
-      L.push('  NOT a sky scene, NOT another grid.');
-      L.push('- OUTER EDGES end in flat, calm, fully opaque ground \u2014 the game samples the flattest patch');
-      L.push('  and repeats it outward to fill any screen.');
-      L.push('- Do NOT pre-darken or vignette; the game applies its own veil.');
-      L.push('Return as: "borderImage": "<data URI>", "borderWindow": ['+F.win.join(', ')+']');
+      L.push('ASSET 3 \u2014 BORDER \u2014 target '+F.bgW+'\u00d7'+F.bgH+' px, fully opaque.');
+      L.push('Your concept\u2019s surroundings with the board area blanked: everything inside the board');
+      L.push('window (the rectangle at x='+F.wr[0]+', y='+F.wr[1]+', size '+F.wr[2]+'\u00d7'+F.wr[3]+' px \u2014 see background-guide.png)');
+      L.push('becomes plain calm ground continuous with the surroundings. Do not include the game UI');
+      L.push('in this image \u2014 surroundings only. Outer edges end in flat, calm, fully opaque ground.');
+      L.push('Do NOT pre-darken or vignette; the game applies its own veil.');
       L.push('');
       L.push('DELIVERY');
-      L.push('Four PNGs as downloadable files, plus one JSON object with exactly: overlayImage, borderImage,');
-      L.push('borderWindow. The tile map travels as the image only \u2014 we convert it to tile placements on our');
-      L.push('side. Exact SIZES, the perspective rules, the pixel-art rendering, and the material rule are');
-      L.push('the contract.');
-      L.push('');
-      L.push('\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 FULL ART DIRECTION (AUTHORITATIVE \u2014 read before painting) \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550');
-      L.push(ART_DIR);
+      L.push('Each asset as a downloadable PNG. No JSON needed \u2014 we import the images directly.');
       return L.join('\n');
+    }
+    function briefText(lv){   // combined view (panel preview + tests)
+      return msg1Text(lv)+'\n\n\u2550\u2550\u2550\u2550\u2550\u2550 MESSAGE 2 \u2014 send only after the concept is approved \u2550\u2550\u2550\u2550\u2550\u2550\n\n'+msg2Text(lv);
     }
     // ---- board.png: the level exactly as rendered, at the overlay's own scale ----
     // Rebuilt from the live render state (hiddenVariant / custCells / water / bridge / TILES),
@@ -4906,6 +4863,57 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
         counts:Object.keys(paint).reduce((o,k)=>(o[k]=paint[k].length,o),{}),
         json:'"paintTiles": '+JSON.stringify(paint)};
     }
+    // ---- exact screenshot: the game as the player sees it, UI and all ----
+    // getDisplayMedia is the only honest in-browser screenshot (canvas re-composition would
+    // approximate the UI). One picker click, one frame, done. Panel hides itself first.
+    async function screenshotURL(){
+      if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia)return null;
+      let stream=null;
+      try{stream=await navigator.mediaDevices.getDisplayMedia(
+        {video:{displaySurface:'browser'},preferCurrentTab:true,audio:false});}catch(e){return null;}
+      try{
+        const video=document.createElement('video');
+        video.srcObject=stream; video.muted=true; await video.play();
+        await new Promise(r=>setTimeout(r,350));            // let the share bar/picker settle
+        const cv=document.createElement('canvas');
+        cv.width=video.videoWidth; cv.height=video.videoHeight;
+        cv.getContext('2d').drawImage(video,0,0);
+        return cv.toDataURL('image/png');
+      }catch(e){return null;}
+      finally{try{stream.getTracks().forEach(t=>t.stop());}catch(e){}}
+    }
+    // ---- overlay / border import with size normalization ----
+    // GPT physically cannot output our exact dimensions (fixed size list), so the exactness
+    // moves to our side: whatever size arrives is stretched to the required canvas on import,
+    // written onto the live level and applied immediately. Registration beats proportion \u2014
+    // a slight stretch is invisible; a misaligned layer is not.
+    async function normalizeToDataURL(url,W,H){
+      const img=await loadImg(url); if(!img)return null;
+      const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+      const x=cv.getContext('2d'); if(!x)return null;
+      x.drawImage(img,0,0,W,H);
+      return{data:cv.toDataURL('image/png'),srcW:img.naturalWidth||img.width,srcH:img.naturalHeight||img.height};
+    }
+    async function applyOverlayURL(url){
+      const lv=currentLevel; if(!lv)return{error:'no level loaded'};
+      const F=facts(lv);
+      const n=await normalizeToDataURL(url,F.ovW,F.ovH);
+      if(!n)return{error:'could not decode the image'};
+      lv.overlayImage=n.data; delete lv.overlayPreset;
+      try{boardEl.style.setProperty('--asset','url("'+n.data+'")');
+        renderSig=new Array(N).fill(-1);render();}catch(e){}
+      return{applied:'overlay',from:n.srcW+'\u00d7'+n.srcH,to:F.ovW+'\u00d7'+F.ovH};
+    }
+    async function applyBorderURL(url){
+      const lv=currentLevel; if(!lv)return{error:'no level loaded'};
+      const F=facts(lv);
+      const n=await normalizeToDataURL(url,F.bgW,F.bgH);
+      if(!n)return{error:'could not decode the image'};
+      lv.borderImage=n.data;
+      if(!(lv.borderWindow&&lv.borderWindow.length===4))lv.borderWindow=F.win.slice();
+      try{layoutRealmArt();}catch(e){}
+      return{applied:'border',from:n.srcW+'\u00d7'+n.srcH,to:F.bgW+'\u00d7'+F.bgH};
+    }
     function download(url,name){if(!url)return;
       const a=document.createElement('a');a.href=url;a.download=name;
       document.body.appendChild(a);a.click();a.remove();}
@@ -4935,9 +4943,20 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
       const row=document.createElement('div');row.className='ab-btns';
       const mk=(t,fn)=>{const b=document.createElement('button');b.textContent=t;
         b.addEventListener('click',fn);row.appendChild(b);return b;};
-      const cp=mk('\ud83d\udccb Copy brief',()=>{if(!currentLevel)return;refresh();box.select();
-        try{navigator.clipboard?navigator.clipboard.writeText(box.value):document.execCommand('copy');}catch(e){}
-        cp.textContent='Copied \u2713';setTimeout(()=>cp.textContent='\ud83d\udccb Copy brief',1200);});
+      const copyBtn=(label,fn)=>{const b=mk(label,()=>{if(!currentLevel)return;
+        const txt=fn(currentLevel); box.value=txt; box.select();
+        try{navigator.clipboard?navigator.clipboard.writeText(txt):document.execCommand('copy');}catch(e){}
+        const t0=b.textContent=label; b.textContent='Copied \u2713';setTimeout(()=>b.textContent=t0,1200);});return b;};
+      copyBtn('\ud83d\udccb Msg 1 \u2014 concept',msg1Text);
+      copyBtn('\ud83d\udccb Msg 2 \u2014 assets',msg2Text);
+      const sc=mk('\ud83d\udcf7 Screenshot',async()=>{
+        if(!currentLevel)return;
+        panel.hidden=true;                                   // keep the panel out of the shot
+        await new Promise(r=>setTimeout(r,80));
+        const u=await screenshotURL();
+        panel.hidden=false;
+        if(u)download(u,slug(currentLevel)+'-screenshot.png');
+        else{impOut.value='\u2716 screenshot needs a browser with tab capture (pick THIS tab in the picker)';}});
       const cb=mk('\ud83e\udde9 concept-base.png',async()=>{if(!currentLevel)return;
         cb.textContent='rendering\u2026';
         const u=await conceptBaseURL(currentLevel);
@@ -4975,6 +4994,25 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
           fi.value='';};
         rd.readAsDataURL(f);});
       row2.appendChild(ib);row2.appendChild(fi);
+      const mkImport=(label,apply)=>{
+        const f2=document.createElement('input');f2.type='file';f2.accept='image/*';f2.hidden=true;
+        const b2=document.createElement('button');b2.textContent=label;
+        b2.addEventListener('click',()=>f2.click());
+        f2.addEventListener('change',()=>{
+          const f=f2.files&&f2.files[0]; if(!f||!currentLevel)return;
+          const rd=new FileReader();
+          rd.onload=async()=>{
+            b2.textContent='importing\u2026';
+            const res=await apply(rd.result);
+            b2.textContent=label;
+            impOut.value=res.error?('\u2716 '+res.error)
+              :('\u2713 '+res.applied+' applied: '+res.from+' \u2192 stretched to '+res.to
+                +'\n(live on the board now \u2014 tell Claude to commit if it looks right)');
+            f2.value='';};
+          rd.readAsDataURL(f);});
+        row2.appendChild(b2);row2.appendChild(f2);};
+      mkImport('\u2b06 overlay',applyOverlayURL);
+      mkImport('\u2b06 border',applyBorderURL);
       const ic=document.createElement('button');ic.textContent='Copy placements';
       ic.addEventListener('click',()=>{if(!impOut.value)return;impOut.select();
         try{navigator.clipboard?navigator.clipboard.writeText(impOut.value):document.execCommand('copy');}catch(e){}
@@ -4996,7 +5034,7 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
       b.addEventListener('click',toggle);document.body.appendChild(b);
       document.addEventListener('keydown',e=>{if(e.key==='F8'){e.preventDefault();toggle();}});}
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-    window.KSArtBrief={facts,briefText,boardShotURL,bgGuideURL,tilePaletteURL,applyTileMapURL,materials,conceptBaseURL};   // test hook
+    window.KSArtBrief={facts,briefText,msg1Text,msg2Text,boardShotURL,bgGuideURL,tilePaletteURL,applyTileMapURL,applyOverlayURL,applyBorderURL,materials,conceptBaseURL};   // test hook
     window.KSArtBriefShotProbe=()=>boardShotURL(currentLevel);       // test hook: live-level shot
     window.KSArtBriefPaletteProbe=()=>tilePaletteURL(currentLevel);  // test hook: live-level palette
     window.KSArtBriefBaseProbe=()=>conceptBaseURL(currentLevel);     // test hook: live-level concept base
