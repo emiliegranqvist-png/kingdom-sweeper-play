@@ -926,8 +926,8 @@
         <div class="ed-row"><label>Blurb</label><textarea id="edBlurb" rows="2"></textarea></div>
         </details>
         <details class="ed-group" open><summary>Field &amp; foes — gameplay</summary>
-        <div class="ed-row"><label>Size</label><input type="number" id="edCols" value="14" min="6" max="24"> ×
-          <input type="number" id="edRows" value="10" min="6" max="24"></div>
+        <div class="ed-row"><label>Size</label><input type="number" id="edCols" value="14" min="6" max="32"> ×
+          <input type="number" id="edRows" value="10" min="6" max="32"></div>
         <div class="ed-row"><label>Goblins</label><input type="number" id="edMines" value="24" min="1" max="120"></div>
         <div class="ed-row"><label>Fire / Sword</label><input type="number" id="edFire" value="1" min="0" max="9"> /
           <input type="number" id="edSword" value="1" min="0" max="9"></div>
@@ -3703,8 +3703,8 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
   }
   edBuildPalette();
   function edResize(){
-    ED.cols=Math.max(6,Math.min(24,+edEl('edCols').value||14));
-    ED.rows=Math.max(6,Math.min(24,+edEl('edRows').value||10));
+    ED.cols=Math.max(6,Math.min(32,+edEl('edCols').value||14));   // 32: Gauntlet is 30 wide
+    ED.rows=Math.max(6,Math.min(32,+edEl('edRows').value||10));
     edEl('edCols').value=ED.cols;edEl('edRows').value=ED.rows;
     const inb=k=>{const[r,c]=edUnkey(k);return r<ED.rows&&c<ED.cols;};
     for(const k of Object.keys(ED.terr))if(!inb(k))delete ED.terr[k];
@@ -3795,7 +3795,7 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
   function edImport(){
     let lv;try{lv=JSON.parse(edEl('edJson').value);}catch(e){edShowMsg('<span class="bad">✖ Bad JSON: '+edEsc(e.message)+'</span>');return;}
     ED.raw={...lv};
-    ED.cols=Math.max(6,Math.min(24,lv.cols||14));ED.rows=Math.max(6,Math.min(24,lv.rows||10));
+    ED.cols=Math.max(6,Math.min(32,lv.cols||14));ED.rows=Math.max(6,Math.min(32,lv.rows||10));   // was 24: silently truncated the 30-wide Gauntlet
     edEl('edCols').value=ED.cols;edEl('edRows').value=ED.rows;
     edEl('edName').value=lv.name||'New Realm';
     edEl('edDiff').value=['Easy','Medium','Hard','Impossible'].includes(lv.difficulty)?lv.difficulty:'Medium';
