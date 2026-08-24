@@ -1462,21 +1462,32 @@ const DEFAULT_P={
     im.onload=()=>{clearTimeout(t);res(im)}; im.onerror=()=>{clearTimeout(t);res(null)};
     im.src=src;}catch(e){res(null)}});}
   function composeSpriteOverlay(lv,done){
-    if(!lv||!Array.isArray(lv.sprites)||!lv.sprites.length||typeof SPRITE_LIB==='undefined'){done(null);return;}
-    const base=levelOverlay(lv);
-    const key=JSON.stringify(lv.sprites)+'|'+(base?base.length:0)+'|'+lv.cols+'x'+lv.rows;
+    // decor composition: overlayPieces (freely positioned fragments of overlay art, in cell
+    // coords — the Forge's split/drag alignment tool writes these) and library sprites, drawn
+    // over the base overlay. When pieces exist they REPLACE the base image: pieces are born by
+    // converting overlayImage into piece[0], so drawing both would double the art.
+    const pieces=Array.isArray(lv&&lv.overlayPieces)?lv.overlayPieces.filter(p=>p&&p.src):[];
+    const sprites=(lv&&Array.isArray(lv.sprites)&&typeof SPRITE_LIB!=='undefined')?lv.sprites:[];
+    if(!lv||(!pieces.length&&!sprites.length)){done(null);return;}
+    const base=pieces.length?null:levelOverlay(lv);
+    const key=pieces.map(p=>p.src.length+':'+p.x+','+p.y+','+p.w+','+p.h).join(';')
+      +'|'+JSON.stringify(sprites)+'|'+(base?base.length:0)+'|'+lv.cols+'x'+lv.rows;
     if(key===spriteOverlayKey&&spriteOverlayURI){done(spriteOverlayURI);return;}
     const SPR_PX=sprPx(lv);
     const W=lv.cols*SPR_PX,H=lv.rows*SPR_PX;
-    const names=[...new Set(lv.sprites.map(s=>s[0]))].filter(n=>SPRITE_LIB[n]);
-    Promise.all([base?_sprLoad(base):null,...names.map(n=>_sprLoad(SPRITE_LIB[n].src))]).then(imgs=>{
+    const names=[...new Set(sprites.map(s=>s[0]))].filter(n=>SPRITE_LIB[n]);
+    Promise.all([base?_sprLoad(base):null,
+                 ...pieces.map(p=>_sprLoad(p.src)),
+                 ...names.map(n=>_sprLoad(SPRITE_LIB[n].src))]).then(imgs=>{
       try{
         const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
         const x=cv.getContext('2d'); if(!x){done(null);return;}
         x.imageSmoothingEnabled=false;
         if(imgs[0])x.drawImage(imgs[0],0,0,W,H);
-        const byName={}; names.forEach((n,i)=>byName[n]=imgs[i+1]);
-        for(const s of lv.sprites){
+        pieces.forEach((p,i)=>{const im=imgs[1+i]; if(!im)return;
+          x.drawImage(im,p.x*SPR_PX,p.y*SPR_PX,p.w*SPR_PX,p.h*SPR_PX);});
+        const byName={}; names.forEach((n,i)=>byName[n]=imgs[1+pieces.length+i]);
+        for(const s of sprites){
           const [name,r,c,hh,flip]=s, im=byName[name];
           if(!im)continue;
           const h=(+hh||SPRITE_LIB[name].h)*SPR_PX, w=im.width*h/im.height;

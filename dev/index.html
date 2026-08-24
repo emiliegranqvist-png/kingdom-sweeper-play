@@ -602,6 +602,24 @@
   #edSprTools button{background:#16302b; color:#cfe6df; border:1px solid #2c4a44; border-radius:6px;
     font:11px monospace; padding:3px 8px; cursor:pointer;}
   #edSprTools button:hover{background:#1d3d36;}
+  /* overlay pieces layer: under sprites (z5) so sprites stay clickable; pieces get pointer
+     events per-img, the layer itself only during split marquee */
+  #edOvLayer{position:absolute; inset:0; pointer-events:none; z-index:4;}
+  #edOvLayer.splitting{cursor:crosshair;}
+  #edOvLayer .ed-ovpiece{position:absolute; pointer-events:auto; cursor:grab; image-rendering:pixelated;}
+  #edOvLayer .ed-ovpiece.sel{outline:2px dashed var(--gold); outline-offset:1px;}
+  #edOvLayer.splitting .ed-ovpiece{pointer-events:none;}
+  #edOvMarquee{position:absolute; border:2px dashed var(--gold); background:rgba(255,212,121,.12); pointer-events:none;}
+  #edOvTools{position:absolute; left:6px; top:6px; z-index:6; display:flex; gap:4px;}
+  #edOvTools button{background:#16302b; color:#cfe6df; border:1px solid #2c4a44; border-radius:6px;
+    font:11px monospace; padding:3px 8px; cursor:pointer;}
+  #edOvTools button:hover,#edOvTools button.active{background:#1d3d36;}
+  .ed-spr-pick{display:flex; gap:6px; align-items:center;}
+  .ed-spr-pick select{background:#0e1c1a; color:#cfe6df; border:1px solid #2c4a44; border-radius:6px;
+    font:12px monospace; padding:4px;}
+  .ed-spr-pick button{font-family:'Cinzel',serif; font-size:12px; padding:5px 10px; border-radius:8px;
+    background:#16302b; color:#cfe6df; border:1px solid #2c4a44; cursor:pointer;}
+  .ed-spr-pick button.active{background:#1d3d36; outline:2px solid var(--gold);}
   #edOvPrev{position:absolute; inset:8px; pointer-events:none; background-repeat:no-repeat; border-radius:6px; z-index:3;}
   .ed-cell{position:relative; border-radius:3px; background:var(--field); cursor:crosshair; display:flex; align-items:center; justify-content:center; font-size:13px; line-height:1;}
   .ed-cell.a-stone{background:#59616d;} .ed-cell.a-char{background:#3a2723;}
@@ -1725,21 +1743,32 @@ const DEFAULT_P={
     im.onload=()=>{clearTimeout(t);res(im)}; im.onerror=()=>{clearTimeout(t);res(null)};
     im.src=src;}catch(e){res(null)}});}
   function composeSpriteOverlay(lv,done){
-    if(!lv||!Array.isArray(lv.sprites)||!lv.sprites.length||typeof SPRITE_LIB==='undefined'){done(null);return;}
-    const base=levelOverlay(lv);
-    const key=JSON.stringify(lv.sprites)+'|'+(base?base.length:0)+'|'+lv.cols+'x'+lv.rows;
+    // decor composition: overlayPieces (freely positioned fragments of overlay art, in cell
+    // coords — the Forge's split/drag alignment tool writes these) and library sprites, drawn
+    // over the base overlay. When pieces exist they REPLACE the base image: pieces are born by
+    // converting overlayImage into piece[0], so drawing both would double the art.
+    const pieces=Array.isArray(lv&&lv.overlayPieces)?lv.overlayPieces.filter(p=>p&&p.src):[];
+    const sprites=(lv&&Array.isArray(lv.sprites)&&typeof SPRITE_LIB!=='undefined')?lv.sprites:[];
+    if(!lv||(!pieces.length&&!sprites.length)){done(null);return;}
+    const base=pieces.length?null:levelOverlay(lv);
+    const key=pieces.map(p=>p.src.length+':'+p.x+','+p.y+','+p.w+','+p.h).join(';')
+      +'|'+JSON.stringify(sprites)+'|'+(base?base.length:0)+'|'+lv.cols+'x'+lv.rows;
     if(key===spriteOverlayKey&&spriteOverlayURI){done(spriteOverlayURI);return;}
     const SPR_PX=sprPx(lv);
     const W=lv.cols*SPR_PX,H=lv.rows*SPR_PX;
-    const names=[...new Set(lv.sprites.map(s=>s[0]))].filter(n=>SPRITE_LIB[n]);
-    Promise.all([base?_sprLoad(base):null,...names.map(n=>_sprLoad(SPRITE_LIB[n].src))]).then(imgs=>{
+    const names=[...new Set(sprites.map(s=>s[0]))].filter(n=>SPRITE_LIB[n]);
+    Promise.all([base?_sprLoad(base):null,
+                 ...pieces.map(p=>_sprLoad(p.src)),
+                 ...names.map(n=>_sprLoad(SPRITE_LIB[n].src))]).then(imgs=>{
       try{
         const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
         const x=cv.getContext('2d'); if(!x){done(null);return;}
         x.imageSmoothingEnabled=false;
         if(imgs[0])x.drawImage(imgs[0],0,0,W,H);
-        const byName={}; names.forEach((n,i)=>byName[n]=imgs[i+1]);
-        for(const s of lv.sprites){
+        pieces.forEach((p,i)=>{const im=imgs[1+i]; if(!im)return;
+          x.drawImage(im,p.x*SPR_PX,p.y*SPR_PX,p.w*SPR_PX,p.h*SPR_PX);});
+        const byName={}; names.forEach((n,i)=>byName[n]=imgs[1+pieces.length+i]);
+        for(const s of sprites){
           const [name,r,c,hh,flip]=s, im=byName[name];
           if(!im)continue;
           const h=(+hh||SPRITE_LIB[name].h)*SPR_PX, w=im.width*h/im.height;
@@ -3341,7 +3370,8 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
   // so advanced knobs survive even though the UI doesn't expose them.
   const ED={cols:14,rows:10,terr:{},struct:{},foot:new Set(),anchors:{},raw:{},brush:'water',art:{},ovCustom:null,frCustom:null,texPending:null,
     gob:new Set(),closedT:new Set(),openT:new Set(),   // gob/closedT/openT = tutorial fixed-board layers
-    sprites:[],sprSel:-1};                             // sprite overlay placements [name,r,c,h,flip] + selection
+    sprites:[],sprSel:-1,                              // sprite overlay placements [name,r,c,h,flip] + selection
+    ovPieces:[],ovSel:-1,ovSplit:false};               // overlay pieces {src,x,y,w,h} in cell coords
   const ED_BRUSHES=[['erase','✖ Erase'],['water','🌊 Water'],['rock','⛰ Rock'],['bridge','🪵 Bridge'],
     ['castle','🏰 Castle'],['keep','🛡 Keep'],['foothold','🦶 Foothold'],
     ['goblin','👺 Goblin@'],['closed','🌫 Closed'],['opening','🚪 Opening'],
@@ -3377,14 +3407,24 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
     else if(b==='stoneArt'||b==='charArt')ED.art[k]=(b==='stoneArt'?'stone':'char');
     else if(b.startsWith('tex:'))ED.art[k]=b;
     else if(b==='foothold'){ED.foot.has(k)?ED.foot.delete(k):ED.foot.add(k);}
-    else if(b.startsWith('spr:')){const name=b.slice(4);
-      ED.sprites.push([name,r+0.95,c+0.5,(typeof SPRITE_LIB!=='undefined'&&SPRITE_LIB[name]?SPRITE_LIB[name].h:1.5),0]);
+    else if(b==='sprplace'){const se=edEl('edSprSelect'),name=se?se.value:'';
+      if(!name||typeof SPRITE_LIB==='undefined'||!SPRITE_LIB[name])return;
+      ED.sprites.push([name,r+0.95,c+0.5,SPRITE_LIB[name].h||1.5,0]);
       ED.sprSel=ED.sprites.length-1;edRenderSprites();}
     else {const cur=ED.anchors[b];if(cur&&cur[0]===r&&cur[1]===c)delete ED.anchors[b];else ED.anchors[b]=[r,c];}
   }
+  function edCellPx(){
+    // fit the whole board on screen: the old fixed 660px budget sized by cols only, so the
+    // Gauntlet's 30x16 ran off the viewport. Measure what's actually available in both axes.
+    const wrap=document.querySelector('.ed-gridwrap');
+    const availW=Math.max(320,((wrap&&wrap.parentElement&&wrap.parentElement.clientWidth)||900))-24;
+    const top=wrap?Math.max(120,wrap.getBoundingClientRect().top):200;
+    const availH=Math.max(220,((typeof window!=='undefined'&&window.innerHeight)||760)-top-70);
+    return Math.max(10,Math.min(30,Math.floor(Math.min((availW-16)/ED.cols,(availH-16)/ED.rows))-2));
+  }
   function edRenderGrid(){
     const g=edEl('edGrid');g.innerHTML='';
-    const px=Math.max(16,Math.min(30,Math.floor(660/ED.cols)));
+    const px=edCellPx();
     g.style.gridTemplateColumns='repeat('+ED.cols+','+px+'px)';g.style.gridAutoRows=px+'px';
     for(let r=0;r<ED.rows;r++)for(let c=0;c<ED.cols;c++){
       const k=edKey(r,c),d=document.createElement('div');d.className='ed-cell';
@@ -3407,7 +3447,7 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
         else if(ED.brush==='goblin'){ED.gob.add(k);edRenderGrid();}});
       d.addEventListener('contextmenu',e=>e.preventDefault());
       g.appendChild(d);}
-    edOvPreview();edFrPreview();edRenderSprites();edAutosave();
+    edOvPreview();edFrPreview();edRenderSprites();edRenderOvPieces();edAutosave();
   }
   document.addEventListener('mouseup',()=>edDown=false);
   // ---- sprite overlay layer: previews over the grid, drag to move, toolbar to adjust ----
@@ -3415,7 +3455,7 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
   // overlay at load), so nothing here touches gameplay state — same contract as art brushes.
   let edSprDrag=-1;
   function edSprGeom(){const g=edEl('edGrid');
-    const px=Math.max(16,Math.min(30,Math.floor(660/ED.cols)));
+    const px=edCellPx();
     return{px,pad:8,gap:2,step:px+2,g};}
   function edRenderSprites(){
     const wrap=document.querySelector('.ed-gridwrap'); if(!wrap)return;
@@ -3457,6 +3497,129 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
     s[1]=Math.max(0,Math.min(ED.rows,Math.round((ev.clientY-rect.top-pad)/step*4)/4));
     edRenderSprites();});
   document.addEventListener('mouseup',()=>{if(edSprDrag>=0){edSprDrag=-1;edAutosave();}});
+  // ---- overlay pieces: the alignment tool. The level's overlay becomes draggable pieces on
+  // an absolute layer over the grid; select, drag (0.05-cell steps), scale, and SPLIT — cut a
+  // rectangle out of a piece into its own independent piece so one region can be repositioned
+  // without moving the rest. Export writes overlayPieces (cell coords); the runtime compositor
+  // renders them, so what the Forge shows is what the game draws.
+  let edOvDrag=-1, edOvDragOff=null, edOvMarquee=null;
+  function edOvGeom(){return edSprGeom();}
+  function edOvInitFromLevel(lv){
+    ED.ovSel=-1;ED.ovSplit=false;
+    if(Array.isArray(lv.overlayPieces)&&lv.overlayPieces.length)
+      ED.ovPieces=lv.overlayPieces.map(p=>({src:p.src,x:+p.x||0,y:+p.y||0,w:+p.w||ED.cols,h:+p.h||ED.rows}));
+    else if(lv.overlayImage&&!lv.overlayPreset)
+      ED.ovPieces=[{src:lv.overlayImage,x:0,y:0,w:ED.cols,h:ED.rows}];
+    else ED.ovPieces=[];
+    edRenderOvPieces();}
+  function edRenderOvPieces(){
+    const wrap=document.querySelector('.ed-gridwrap'); if(!wrap)return;
+    let layer=edEl('edOvLayer');
+    if(!layer){layer=document.createElement('div');layer.id='edOvLayer';wrap.appendChild(layer);}
+    layer.innerHTML='';
+    const{pad,step}=edOvGeom();
+    ED.ovPieces.forEach((p,i)=>{
+      const im=document.createElement('img');
+      im.src=p.src; im.className='ed-ovpiece'+(i===ED.ovSel?' sel':'');
+      im.draggable=false;
+      im.style.left=(pad+p.x*step)+'px'; im.style.top=(pad+p.y*step)+'px';
+      im.style.width=(p.w*step)+'px'; im.style.height=(p.h*step)+'px';
+      im.addEventListener('mousedown',ev=>{
+        if(ED.ovSplit)return;                        // split marquee owns the mouse
+        ev.preventDefault();ev.stopPropagation();
+        ED.ovSel=i;
+        const g=edOvGeom(),rect=g.g.getBoundingClientRect();
+        edOvDragOff=[(ev.clientX-rect.left-g.pad)/g.step-p.x,(ev.clientY-rect.top-g.pad)/g.step-p.y];
+        edOvDrag=i;edRenderOvPieces();});
+      layer.appendChild(im);});
+    layer.style.pointerEvents=ED.ovSplit?'auto':'none';
+    layer.classList.toggle('splitting',ED.ovSplit);
+    let tools=edEl('edOvTools');
+    if(!tools){tools=document.createElement('div');tools.id='edOvTools';
+      const mk=(t,ti,fn)=>{const b=document.createElement('button');b.textContent=t;b.title=ti;
+        b.addEventListener('click',()=>fn(b));tools.appendChild(b);return b;};
+      mk('✂ split','Drag a rectangle over the selected piece to cut it out',()=>{
+        ED.ovSplit=!ED.ovSplit;edRenderOvPieces();});
+      mk('⤢','Grow 3% around center',()=>edOvScaleSel(1.03));
+      mk('⤡','Shrink 3% around center',()=>edOvScaleSel(1/1.03));
+      mk('▣ fit board','Stretch back over the whole board',()=>{const p=ED.ovPieces[ED.ovSel];
+        if(p){p.x=0;p.y=0;p.w=ED.cols;p.h=ED.rows;edRenderOvPieces();edAutosave();}});
+      mk('🗑','Delete this piece',()=>{if(ED.ovSel>=0){ED.ovPieces.splice(ED.ovSel,1);ED.ovSel=-1;
+        ED.ovSplit=false;edRenderOvPieces();edAutosave();}});
+      wrap.appendChild(tools);}
+    tools.hidden=ED.ovSel<0||!ED.ovPieces[ED.ovSel];
+    const sb=tools&&tools.firstChild; if(sb)sb.classList.toggle('active',ED.ovSplit);
+  }
+  function edOvScaleSel(f){const p=ED.ovPieces[ED.ovSel]; if(!p)return;
+    const cx=p.x+p.w/2,cy=p.y+p.h/2;
+    p.w=Math.max(0.5,p.w*f);p.h=Math.max(0.5,p.h*f);
+    p.x=cx-p.w/2;p.y=cy-p.h/2;
+    edRenderOvPieces();edAutosave();}
+  // split: cut rect (cell coords) out of the selected piece into a new independent piece
+  function edOvSplitRect(rx,ry,rw,rh,done){
+    const p=ED.ovPieces[ED.ovSel]; if(!p){if(done)done(false);return;}
+    const x0=Math.max(rx,p.x),y0=Math.max(ry,p.y);
+    const x1=Math.min(rx+rw,p.x+p.w),y1=Math.min(ry+rh,p.y+p.h);
+    if(x1-x0<0.2||y1-y0<0.2){if(done)done(false);return;}
+    _sprLoad(p.src).then(im=>{
+      if(!im){if(done)done(false);return;}
+      const sx=(x0-p.x)/p.w*im.width, sy=(y0-p.y)/p.h*im.height;
+      const sw=(x1-x0)/p.w*im.width, sh=(y1-y0)/p.h*im.height;
+      const cut=document.createElement('canvas');cut.width=Math.max(1,Math.round(sw));cut.height=Math.max(1,Math.round(sh));
+      cut.getContext('2d').drawImage(im,sx,sy,sw,sh,0,0,cut.width,cut.height);
+      const rest=document.createElement('canvas');rest.width=im.width;rest.height=im.height;
+      const rc=rest.getContext('2d');rc.drawImage(im,0,0);rc.clearRect(sx,sy,sw,sh);
+      p.src=rest.toDataURL('image/png');
+      ED.ovPieces.push({src:cut.toDataURL('image/png'),x:x0,y:y0,w:x1-x0,h:y1-y0});
+      ED.ovSel=ED.ovPieces.length-1;ED.ovSplit=false;
+      edRenderOvPieces();edAutosave();
+      if(done)done(true);});
+  }
+  // split marquee on the layer
+  document.addEventListener('mousedown',ev=>{
+    const layer=edEl('edOvLayer');
+    if(!layer||!ED.ovSplit||!layer.contains(ev.target)&&ev.target!==layer)return;
+    const g=edOvGeom(),rect=g.g.getBoundingClientRect();
+    const cx=(ev.clientX-rect.left-g.pad)/g.step, cy=(ev.clientY-rect.top-g.pad)/g.step;
+    edOvMarquee={x0:cx,y0:cy,x1:cx,y1:cy,el:document.createElement('div')};
+    edOvMarquee.el.id='edOvMarquee';layer.appendChild(edOvMarquee.el);
+    ev.preventDefault();});
+  document.addEventListener('mousemove',ev=>{
+    const g=edOvGeom();
+    if(edOvMarquee){
+      const rect=g.g.getBoundingClientRect();
+      edOvMarquee.x1=(ev.clientX-rect.left-g.pad)/g.step;
+      edOvMarquee.y1=(ev.clientY-rect.top-g.pad)/g.step;
+      const m=edOvMarquee,el=m.el;
+      el.style.left=(g.pad+Math.min(m.x0,m.x1)*g.step)+'px';
+      el.style.top=(g.pad+Math.min(m.y0,m.y1)*g.step)+'px';
+      el.style.width=(Math.abs(m.x1-m.x0)*g.step)+'px';
+      el.style.height=(Math.abs(m.y1-m.y0)*g.step)+'px';
+      return;}
+    if(edOvDrag<0)return;
+    const p=ED.ovPieces[edOvDrag]; if(!p){edOvDrag=-1;return;}
+    const rect=g.g.getBoundingClientRect();
+    p.x=Math.round(((ev.clientX-rect.left-g.pad)/g.step-edOvDragOff[0])*20)/20;
+    p.y=Math.round(((ev.clientY-rect.top-g.pad)/g.step-edOvDragOff[1])*20)/20;
+    edRenderOvPieces();});
+  document.addEventListener('mouseup',()=>{
+    if(edOvMarquee){
+      const m=edOvMarquee;m.el.remove();edOvMarquee=null;
+      edOvSplitRect(Math.min(m.x0,m.x1),Math.min(m.y0,m.y1),Math.abs(m.x1-m.x0),Math.abs(m.y1-m.y0));
+      return;}
+    if(edOvDrag>=0){edOvDrag=-1;edAutosave();}});
+  document.addEventListener('keydown',ev=>{
+    const p=ED.ovPieces[ED.ovSel];
+    if(!p||edEl('editor').hidden)return;
+    const t=document.activeElement&&document.activeElement.tagName;
+    if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
+    const st=ev.shiftKey?0.25:0.05;
+    if(ev.key==='ArrowLeft')p.x-=st;else if(ev.key==='ArrowRight')p.x+=st;
+    else if(ev.key==='ArrowUp')p.y-=st;else if(ev.key==='ArrowDown')p.y+=st;
+    else return;
+    ev.preventDefault();edRenderOvPieces();edAutosave();});
+  window.KSForgeOv={pieces:()=>ED.ovPieces,select:i=>{ED.ovSel=i;edRenderOvPieces();},
+    split:(x,y,w,h)=>new Promise(res=>edOvSplitRect(x,y,w,h,res))};   // test hook
   // ---- palette: gameplay brushes shape the puzzle; art brushes are pure cosmetics.
   // Custom tile textures live in a browser library (ksForgeTextures) and appear as extra art brushes.
   const ED_TEX='ksForgeTextures';
@@ -3476,8 +3639,18 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
     for(const[bid,label]of ED_BRUSHES)if(ED_ART_BRUSH_IDS.includes(bid))mk(bid,label);
     for(const name of Object.keys(edTexLib()))mk('tex:'+name,'🖼 '+name);
     if(typeof SPRITE_LIB!=='undefined'&&Object.keys(SPRITE_LIB).length){
-      lab('Sprites — click board to place, click sprite to select, drag to move','artonly');
-      for(const name of Object.keys(SPRITE_LIB))mk('spr:'+name,'🎭 '+name);}
+      // sprites live in a compact dropdown now — the palette stays one screen tall
+      const holder=document.createElement('div');holder.className='ed-spr-pick';
+      const sel=document.createElement('select');sel.id='edSprSelect';
+      for(const name of Object.keys(SPRITE_LIB)){const o=document.createElement('option');
+        o.value=name;o.textContent=name;sel.appendChild(o);}
+      const pb=document.createElement('button');pb.id='edSprPlace';pb.textContent='🎭 Place';
+      pb.title='Then click the board to place the selected sprite';
+      pb.addEventListener('click',()=>{ED.brush='sprplace';
+        p.querySelectorAll('.ed-brush').forEach(x=>x.classList.remove('active'));
+        pb.classList.add('active');});
+      sel.addEventListener('change',()=>{if(ED.brush==='sprplace')return;pb.click();});
+      holder.appendChild(sel);holder.appendChild(pb);p.appendChild(holder);}
   }
   edBuildPalette();
   function edResize(){
@@ -3546,7 +3719,11 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
     else lv.terrainKind=tk;
     const ps=edEl('edOvPreset').value;
     delete lv.overlayPreset;delete lv.overlayImage;
-    if(ps==='custom'&&ED.ovCustom)lv.overlayImage=ED.ovCustom;
+    if(ED.ovPieces.length){
+      lv.overlayPieces=ED.ovPieces.map(p=>({src:p.src,x:Math.round(p.x*1000)/1000,y:Math.round(p.y*1000)/1000,
+        w:Math.round(p.w*1000)/1000,h:Math.round(p.h*1000)/1000}));
+      delete lv.overlayImage;delete lv.overlayPreset;}
+    else if(ps==='custom'&&ED.ovCustom)lv.overlayImage=ED.ovCustom;
     else if(ps!=='none'&&ps!=='custom')lv.overlayPreset=ps;
     if(lv.overlayImage||lv.overlayPreset){
       const wr=(key,val,dflt)=>{if(Math.abs(val-dflt)>1e-9)lv[key]=val;else delete lv[key];};
@@ -3595,6 +3772,7 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
       for(const[r,c]of lv.paintTiles[n])ED.art[edKey(r,c)]='tex:'+n;}
     if(lv.customTiles||lv.paintTiles)edBuildPalette();
     ED.sprites=Array.isArray(lv.sprites)?lv.sprites.map(s=>s.slice()):[];ED.sprSel=-1;edRenderSprites();
+    edOvInitFromLevel(lv);
     ED.frCustom=lv.frameImage||null;
     edEl('edFrScale').value=lv.frameScale??1;edEl('edFrX').value=lv.frameX??0;
     edEl('edFrY').value=lv.frameY??0;edEl('edFrOp').value=lv.frameOp??1;
@@ -3848,6 +4026,7 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
     return ps==='custom'?ED.ovCustom:(OVERLAY_PRESETS[ps]||null);}
   function edOvPreview(){
     const g=edEl('edGrid');if(!g)return;
+    if(ED.ovPieces.length){const px=edEl('edOvPrev');if(px)px.remove();return;}   // pieces own the overlay
     const wrap=g.parentElement;
     let p=edEl('edOvPrev');const img=edOvImg();
     if(!img){if(p)p.remove();return;}
