@@ -593,7 +593,7 @@
   .ed-cell.ed-closed{box-shadow:inset 0 0 0 999px rgba(30,36,58,.55);}
   .ed-cell.ed-opening{outline:2px solid #e8c46a; outline-offset:-2px;}
   #edGrid{display:grid; gap:2px; padding:8px; background:var(--frame); border-radius:10px; box-shadow:0 8px 22px var(--shadow); user-select:none;}
-  .ed-gridwrap{position:relative;}
+  .ed-gridwrap{position:relative; max-width:100%; overflow:auto;}   /* scroll, never clip */
   #edSprLayer{position:absolute; inset:0; pointer-events:none; z-index:5;}
   #edSprLayer .ed-spr{position:absolute; pointer-events:auto; cursor:grab; image-rendering:pixelated;
     transform:translateX(-50%); filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}
@@ -3414,14 +3414,29 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
     else {const cur=ED.anchors[b];if(cur&&cur[0]===r&&cur[1]===c)delete ED.anchors[b];else ED.anchors[b]=[r,c];}
   }
   function edCellPx(){
-    // fit the whole board on screen: the old fixed 660px budget sized by cols only, so the
-    // Gauntlet's 30x16 ran off the viewport. Measure what's actually available in both axes.
+    // fit the whole board on screen. v1 measured .ed-left's clientWidth — but that column is
+    // content-driven, i.e. sized BY the grid we were trying to size (chicken-and-egg), so wide
+    // boards still ran off. Measure the real layout instead: the .ed-main row minus the side
+    // panel when the panel actually sits beside the grid (compare top edges), and the viewport
+    // height below the grid's top. A resize listener re-renders, and the wrap scrolls as a
+    // last-resort fallback so a measurement miss can never HIDE cells again.
+    const vw=(typeof window!=='undefined'&&window.innerWidth)||1024;
+    const vh=(typeof window!=='undefined'&&window.innerHeight)||760;
+    const main=document.querySelector('.ed-main'), panel=document.querySelector('.ed-panel');
+    const mainW=(main&&main.clientWidth)||Math.min(1180,vw);
+    let availW=mainW-28;
+    if(panel&&panel.offsetWidth){
+      const wrap0=document.querySelector('.ed-gridwrap');
+      const beside=wrap0&&Math.abs(panel.getBoundingClientRect().top-wrap0.getBoundingClientRect().top)<220;
+      if(beside||mainW>=980)availW=mainW-panel.offsetWidth-24;}
     const wrap=document.querySelector('.ed-gridwrap');
-    const availW=Math.max(320,((wrap&&wrap.parentElement&&wrap.parentElement.clientWidth)||900))-24;
-    const top=wrap?Math.max(120,wrap.getBoundingClientRect().top):200;
-    const availH=Math.max(220,((typeof window!=='undefined'&&window.innerHeight)||760)-top-70);
+    const top=wrap?Math.max(140,wrap.getBoundingClientRect().top):240;
+    const availH=Math.max(220,vh-top-64);
     return Math.max(10,Math.min(30,Math.floor(Math.min((availW-16)/ED.cols,(availH-16)/ED.rows))-2));
   }
+  if(typeof window!=='undefined'&&window.addEventListener){let edRsT=null;
+    window.addEventListener('resize',()=>{clearTimeout(edRsT);
+      edRsT=setTimeout(()=>{const ed=edEl('editor');if(ed&&!ed.hidden)edRenderGrid();},150);});}
   function edRenderGrid(){
     const g=edEl('edGrid');g.innerHTML='';
     const px=edCellPx();
