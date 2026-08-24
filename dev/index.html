@@ -3396,7 +3396,9 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
           edShowMsg('⚠ Restored your OLD working copy'+(an?' of “'+edEsc(an)+'”':'')+' from autosave — this may be '
             +'behind the shipped version. Click a Library card to load the current shipped realm; Clear starts fresh.');}catch(_){}}
     }
-    edPxOverride=null;edRenderGrid();}
+    edPxOverride=null;edRenderGrid();
+    if(typeof setTimeout!=='undefined')setTimeout(edFitCheck,350);   // fonts/layout settle late
+  }
 
   function edPaint(r,c,erase){
     const k=edKey(r,c), b=ED.brush;
