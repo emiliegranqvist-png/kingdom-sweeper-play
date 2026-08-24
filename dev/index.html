@@ -594,6 +594,7 @@
   .ed-cell.ed-opening{outline:2px solid #e8c46a; outline-offset:-2px;}
   #edGrid{display:grid; gap:2px; padding:8px; background:var(--frame); border-radius:10px; box-shadow:0 8px 22px var(--shadow); user-select:none;}
   .ed-gridwrap{position:relative; max-width:100%; overflow:auto;}   /* scroll, never clip */
+  #edGridCap{font-size:11px; opacity:.6; letter-spacing:.05em; font-family:monospace; text-align:center;}
   #edSprLayer{position:absolute; inset:0; pointer-events:none; z-index:5;}
   #edSprLayer .ed-spr{position:absolute; pointer-events:auto; cursor:grab; image-rendering:pixelated;
     transform:translateX(-50%); filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}
@@ -3390,9 +3391,12 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
     if(!edBooted){edBooted=true;edRenderLib();
       let auto=null;try{auto=localStorage.getItem(ED_AUTO);}catch(_){}
       if(auto&&!Object.keys(ED.terr).length&&!Object.keys(ED.struct).length&&!Object.keys(ED.raw).length){
-        try{edEl('edJson').value=auto;edImport();edShowMsg('Restored your working realm from autosave. Clear starts fresh; the library keeps proper saves.');}catch(_){}}
+        try{edEl('edJson').value=auto;edImport();
+          let an='';try{an=JSON.parse(auto).name||JSON.parse(auto).id||'';}catch(_){}
+          edShowMsg('⚠ Restored your OLD working copy'+(an?' of “'+edEsc(an)+'”':'')+' from autosave — this may be '
+            +'behind the shipped version. Click a Library card to load the current shipped realm; Clear starts fresh.');}catch(_){}}
     }
-    edRenderGrid();}
+    edPxOverride=null;edRenderGrid();}
 
   function edPaint(r,c,erase){
     const k=edKey(r,c), b=ED.brush;
@@ -3436,10 +3440,12 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
   }
   if(typeof window!=='undefined'&&window.addEventListener){let edRsT=null;
     window.addEventListener('resize',()=>{clearTimeout(edRsT);
-      edRsT=setTimeout(()=>{const ed=edEl('editor');if(ed&&!ed.hidden)edRenderGrid();},150);});}
+      edRsT=setTimeout(()=>{const ed=edEl('editor');if(ed&&!ed.hidden){edPxOverride=null;edRenderGrid();}},150);});}
+  let edPxOverride=null, edFitTries=0;
   function edRenderGrid(){
     const g=edEl('edGrid');g.innerHTML='';
-    const px=edCellPx();
+    const px=edPxOverride||edCellPx();
+    g.dataset.px=px;
     g.style.gridTemplateColumns='repeat('+ED.cols+','+px+'px)';g.style.gridAutoRows=px+'px';
     for(let r=0;r<ED.rows;r++)for(let c=0;c<ED.cols;c++){
       const k=edKey(r,c),d=document.createElement('div');d.className='ed-cell';
@@ -3462,7 +3468,33 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
         else if(ED.brush==='goblin'){ED.gob.add(k);edRenderGrid();}});
       d.addEventListener('contextmenu',e=>e.preventDefault());
       g.appendChild(d);}
+    let cap=edEl('edGridCap');
+    if(!cap){cap=document.createElement('div');cap.id='edGridCap';
+      const wrap=document.querySelector('.ed-gridwrap');
+      if(wrap&&wrap.parentElement)wrap.parentElement.insertBefore(cap,wrap.nextSibling);}
+    if(cap)cap.textContent='editing: '+(edEl('edName').value||ED.raw.id||'unnamed')+' · '+ED.cols+'×'+ED.rows
+      +(ED.ovPieces.length?' · '+ED.ovPieces.length+' overlay piece'+(ED.ovPieces.length>1?'s':''):'');
     edOvPreview();edFrPreview();edRenderSprites();edRenderOvPieces();edAutosave();
+    edFitCheck();
+  }
+  // measure the grid AS RENDERED; if it overflows what's actually visible, shrink and redo.
+  // Prediction-based sizing failed twice (content-driven containers lie about their width);
+  // reacting to real overflow cannot.
+  function edFitCheck(){
+    if(typeof requestAnimationFrame==='undefined')return;
+    requestAnimationFrame(()=>{
+      const g=edEl('edGrid'),ed=edEl('editor');
+      if(!g||!ed||ed.hidden){edFitTries=0;edPxOverride=null;return;}
+      const wrap=g.parentElement, rect=wrap.getBoundingClientRect();
+      const availW=Math.min(wrap.clientWidth||1e9,(window.innerWidth||1200)-rect.left-12);
+      const availH=(window.innerHeight||760)-rect.top-56;
+      const over=g.scrollWidth>availW+4||g.scrollHeight>availH+4;
+      if(over&&edFitTries<3){
+        edFitTries++;
+        const px=Math.max(10,Math.floor(Math.min((availW-18)/ED.cols,(availH-18)/ED.rows))-2);
+        const cur=+g.dataset.px||30;
+        if(px<cur){edPxOverride=px;edRenderGrid();return;}}
+      edFitTries=0;edPxOverride=null;});
   }
   document.addEventListener('mouseup',()=>edDown=false);
   // ---- sprite overlay layer: previews over the grid, drag to move, toolbar to adjust ----
