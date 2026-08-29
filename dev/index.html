@@ -3504,7 +3504,12 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
   // overlay at load), so nothing here touches gameplay state — same contract as art brushes.
   let edSprDrag=-1;
   function edSprGeom(){const g=edEl('edGrid');
-    const px=edCellPx();
+    // SINGLE SOURCE OF TRUTH: read the px the grid was ACTUALLY rendered at (dataset.px),
+    // never recompute. Recomputing here caused the save-scrambles-placement bug: when the
+    // self-fit shrank the grid, layers recomputed a different px, drew at the wrong scale,
+    // and dragging pieces "until they looked right" wrote wrong cell coords — which then
+    // rendered scrambled on every reload. Grid and layers must share one px, always.
+    const px=(g&&+g.dataset.px)||edCellPx();
     return{px,pad:8,gap:2,step:px+2,g};}
   function edRenderSprites(){
     const wrap=document.querySelector('.ed-gridwrap'); if(!wrap)return;
