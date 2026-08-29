@@ -595,6 +595,8 @@
   #edGrid{display:grid; gap:2px; padding:8px; background:var(--frame); border-radius:10px; box-shadow:0 8px 22px var(--shadow); user-select:none;}
   .ed-gridwrap{position:relative; max-width:100%; overflow:auto;}   /* scroll, never clip */
   #edGridCap{font-size:11px; opacity:.6; letter-spacing:.05em; font-family:monospace; text-align:center;}
+  .ed-remember{display:flex; gap:6px; align-items:flex-start; font-size:10.5px; opacity:.65; line-height:1.4; cursor:pointer;}
+  .ed-remember input{margin-top:2px;}
   #edSprLayer{position:absolute; inset:0; pointer-events:none; z-index:5;}
   #edSprLayer .ed-spr{position:absolute; pointer-events:auto; cursor:grab; image-rendering:pixelated;
     transform:translateX(-50%); filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}
@@ -960,7 +962,8 @@
         <div class="ed-row"><label>Opacity</label><input type="range" id="edFrOp" min="0" max="1" step="0.02" value="1"></div>
         </details>
         <details class="ed-group"><summary>Submit to repo</summary>
-        <div class="ed-row"><label>Token</label><input type="password" id="edGhTok" placeholder="GitHub token — memory only" autocomplete="off"></div>
+        <div class="ed-row"><label>Token</label><input type="password" id="edGhTok" placeholder="GitHub token" autocomplete="off"></div>
+        <label class="ed-remember"><input type="checkbox" id="edGhRemember"> remember on this device (stored in this browser only — tick on your own machine, not shared computers)</label>
         <div class="ed-row"><label>Target</label><select id="edGhCat"><option value="campaign">Campaign</option><option value="training">Training</option><option value="tutorial">Tutorial</option></select></div>
         <div class="ed-row"><button class="btn" id="edSubmitBtn" style="flex:1;">🚀 Submit realm</button></div>
         </details>
@@ -3987,8 +3990,23 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
     try{localStorage.setItem(ED_AUTO,edJsonPretty(edLevel()));}catch(_){}},400);}
   // ---- submit: commit the realm's JSON straight to the repo (levels/<target>/<id>.json).
   // The GitHub Action rebuilds the HTML on push, closing the solo loop: edit → submit → play.
-  // Token lives in this input only — memory for the session, never persisted anywhere.
+  // Token: memory-only by default; "remember on this device" opts into localStorage —
+  // Emilie's call: re-fetching the token every session made Submit slower than pasting JSON,
+  // which defeated its purpose. Solo dev, own machine, repo-scoped fine-grained token:
+  // acceptable trade. Forget button + unticking clears it.
   const ED_GH={owner:'emiliegranqvist-png',repo:'Kingdom-Sweeper-',branch:'main'};
+  const ED_TOK='ks_forge_token';
+  (function(){
+    const t=edEl('edGhTok'),rem=edEl('edGhRemember');
+    if(!t||!rem)return;
+    let saved=null;try{saved=localStorage.getItem(ED_TOK);}catch(_){}
+    if(saved){t.value=saved;rem.checked=true;}
+    const sync=()=>{try{
+      if(rem.checked&&t.value.trim())localStorage.setItem(ED_TOK,t.value.trim());
+      else localStorage.removeItem(ED_TOK);}catch(_){}};
+    rem.addEventListener('change',sync);
+    t.addEventListener('input',()=>{if(rem.checked)sync();});
+  })();
   async function edSubmit(){
     const tok=edEl('edGhTok').value.trim();
     if(!tok){edShowMsg('<span class="bad">✖ Paste a GitHub token first (fine-grained, repo contents read/write). It stays in memory only.</span>');return;}
