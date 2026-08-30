@@ -1784,6 +1784,31 @@ const DEFAULT_P={
       }catch(e){done(null);}
     });
   }
+  // ---- overlay binding (PERF): never park a big data URL in a CSS custom property ----
+  // .cell.ov::before paints background-image:var(--asset). Custom properties are substituted
+  // per element at style time, so a ~1 MB overlay data URL was re-tokenized, URL-resolved
+  // and image-cache-hashed for EVERY cell on every restyle — on the 480-cell Gauntlet that is
+  // ~half a gigabyte of string work per full pass (open, flood reveal, ring updates): the
+  // "freezes on open and on actions" report. Bind a blob: URL instead (a few dozen bytes);
+  // the pixels live in the blob store and decode once. Falls back to the raw data URL where
+  // blobs aren't available (headless tests) so the string-visible contract is unchanged.
+  let ovBlobURL=null;
+  function dataURLtoBlob(uri){
+    const comma=uri.indexOf(','); if(comma<0)return null;
+    const head=uri.slice(5,comma), b64=/;base64$/i.test(head);
+    const mime=head.replace(/;base64$/i,'')||'application/octet-stream';
+    if(b64){const bin=atob(uri.slice(comma+1)); const u8=new Uint8Array(bin.length);
+      for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i); return new Blob([u8],{type:mime});}
+    return new Blob([decodeURIComponent(uri.slice(comma+1))],{type:mime});}
+  function bindBoardOverlay(uri){
+    const prev=ovBlobURL; ovBlobURL=null;
+    let bound=uri;
+    if(uri&&/^data:/.test(uri)&&typeof URL!=='undefined'&&typeof URL.createObjectURL==='function'&&typeof Blob!=='undefined'){
+      try{const b=dataURLtoBlob(uri); if(b){ovBlobURL=URL.createObjectURL(b); bound=ovBlobURL;}}catch(e){}}
+    boardEl.style.setProperty('--asset', bound?('url("'+bound+'")'):'none');
+    // release the previous blob only after the new binding has had time to load
+    if(prev)setTimeout(()=>{try{URL.revokeObjectURL(prev);}catch(_){}},3000);
+  }
   // ---- optional per-level frame decoration: a full-page FADED BACKDROP behind all UI ----
   // frameImage covers the whole viewport (position:fixed on body, z-index:-1 — see CSS).
   // A baked veil in the background stack mutes the art so tiles, HUD and text always read
@@ -3238,16 +3263,16 @@ el.style.setProperty('--aop',ovOpacityFor(i,ring));}
     applyLevelState(lv);
     spriteOverlayURI=null; spriteOverlayKey='';
     const ovAsset=levelOverlay(currentLevel);
-    boardEl.style.setProperty('--asset', ovAsset?('url("'+ovAsset+'")'):'none');
+    bindBoardOverlay(ovAsset);
     composeSpriteOverlay(currentLevel,uri=>{
       if(!uri||currentLevel!==lv)return;
-      boardEl.style.setProperty('--asset','url("'+uri+'")');
+      bindBoardOverlay(uri);
       renderSig=new Array(N).fill(-1); render();});
     // no sprites → the base overlay is used raw; enforce the pixel budget on it too
     if(!(Array.isArray(currentLevel.sprites)&&currentLevel.sprites.length)&&ovAsset)
       normalizeOverlay(ovAsset,uri=>{
         if(!uri||currentLevel!==lv)return;
-        boardEl.style.setProperty('--asset','url("'+uri+'")');
+        bindBoardOverlay(uri);
         renderSig=new Array(N).fill(-1); render();});
     // per-level frame decoration: full-page faded backdrop behind all UI (pure cosmetics)
     updateFrameArt();
@@ -5310,7 +5335,7 @@ RESPONSE: ONLY a JSON object, no prose, no fences. Shape: {"sounds":{"<name>":{"
       const n=await normalizeToDataURL(url,F.ovW,F.ovH);
       if(!n)return{error:'could not decode the image'};
       lv.overlayImage=n.data; delete lv.overlayPreset;
-      try{boardEl.style.setProperty('--asset','url("'+n.data+'")');
+      try{bindBoardOverlay(n.data);
         renderSig=new Array(N).fill(-1);render();}catch(e){}
       return{applied:'overlay',from:n.srcW+'\u00d7'+n.srcH,to:F.ovW+'\u00d7'+F.ovH};
     }
