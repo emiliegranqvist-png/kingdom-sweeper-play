@@ -1495,6 +1495,8 @@ const DEFAULT_P={
   // frontier experiment switched the *tile art* per-neighbour, which read as a patchwork of
   // two ground textures; the overlay is a single continuous image, so grading it by opacity
   // reads as depth rather than as tiling. Don't move this back onto the tile art.
+  // (The 2026-08-31 FRONTIER SEAM is not that experiment returning: it draws a thin LINE on
+  // the boundary sides via CSS shadows — the tile textures themselves never switch.)
 
   // geometric castle region (used for placement + density + look in castle layout)
   const isCastleGeom=(r,c)=> (c>=COLS-5)&&(r<5);
