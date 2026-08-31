@@ -8,8 +8,10 @@
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap');
   :root{
     /* art-clarity knobs (dev Art Tuner drives these live; defaults are the shipped look) */
-    --ks-settle-num:.32; --ks-settle-corpse:.30; --ks-settle-ring:.18; --ks-settle-dur:.9s;
-    --ks-corpse-grey:.82; --ks-corpse-bright:.62; --ks-corpse-op:.78;
+    --ks-settle-num:.32; --ks-settle-corpse:.22; --ks-settle-ring:0; --ks-settle-dur:1s;
+    --ks-corpse-grey:.55; --ks-corpse-bright:.73; --ks-corpse-op:1;
+    /* board clarity: frontier seam (cleared edge touching unopened ground) + gap fill between tiles */
+    --ks-frontier-op:.55; --ks-frontier-w:1.5px; --ks-gap-dark:0; --ks-gap-light:0;
     --bg-0:#10201d; --bg-1:#1b3330; --ink:#e9e3d0; --ink-dim:#a9b0a0;
     --field:#4a6b3f; --field-lo:#3c5a34; --field-rev:#cdd9b4;
     --stone:#5a5c63; --stone-lo:#46474d; --stone-rev:#b9b6ad;
@@ -170,7 +172,12 @@
   .region-label{position:absolute; top:2px; right:6px; font-family:'Cinzel',serif; font-size:12px;
     letter-spacing:.18em; color:#cdae6b; opacity:.8; pointer-events:none;}
   .region-label.field{left:6px; right:auto; color:#9ec27e;}
-  #board{display:grid; gap:3px; position:relative; touch-action:none; width:max-content;}
+  /* Gap clarity: the 3px grid gap is the board's registration unit (STEP=45 everywhere), so its
+     SIZE never changes — instead these two tunable fills paint the container behind the cells,
+     showing only through the gaps (and rounded corners). Light layered over dark; both default 0. */
+  #board{display:grid; gap:3px; position:relative; touch-action:none; width:max-content;
+    background:linear-gradient(rgba(255,241,205,var(--ks-gap-light,0)),rgba(255,241,205,var(--ks-gap-light,0))),
+               linear-gradient(rgba(12,9,6,var(--ks-gap-dark,0)),rgba(12,9,6,var(--ks-gap-dark,0)));}
   .cell.drag-tgt{outline:2px solid #9ec27e; outline-offset:-2px; filter:brightness(1.25);}
   .cell{width:42px; height:42px; border-radius:6px; display:flex; align-items:center; justify-content:center;
     font-family:'Cinzel',serif; font-weight:700; font-size:18px; cursor:pointer; position:relative;
@@ -254,9 +261,23 @@
     background-repeat:no-repeat; background-size:var(--asize,cover); background-position:var(--apos,center);
     opacity:var(--aop,1); z-index:0; pointer-events:none; border-radius:inherit; transition:opacity .12s;}
   .cell.ov .num, .cell.ov .mark{position:relative; z-index:1;}
+  /* FRONTIER SEAM: a light line on a cleared tile's sides that touch unopened ground — the
+     cleared/uncleared (claimed/unclaimed) boundary, readable at a glance. render() sets
+     --fT/--fR/--fB/--fL to 0/1 per cell (orthogonal hidden neighbours; the bits live in the
+     render signature so incremental render stays correct). Composed as a custom property so
+     the same four inset shadows ride the .ov::after border on art boards and a dedicated
+     pseudo elsewhere — it never fights the cells' own !important box-shadows (corpse ring,
+     warded, volcano depth). Strength/width are Art Tuner knobs; zero width = invisible. */
+  .cell{--ks-frontier-shadow:
+    inset 0 calc(var(--fT,0)*var(--ks-frontier-w,0px)) 0 0 rgba(240,226,180,var(--ks-frontier-op,0)),
+    inset 0 calc(var(--fB,0)*-1*var(--ks-frontier-w,0px)) 0 0 rgba(240,226,180,var(--ks-frontier-op,0)),
+    inset calc(var(--fL,0)*var(--ks-frontier-w,0px)) 0 0 0 rgba(240,226,180,var(--ks-frontier-op,0)),
+    inset calc(var(--fR,0)*-1*var(--ks-frontier-w,0px)) 0 0 0 rgba(240,226,180,var(--ks-frontier-op,0));}
+  .cell.frontier:not(.ov)::after{content:''; position:absolute; inset:0; border-radius:inherit; z-index:2;
+    pointer-events:none; box-shadow:var(--ks-frontier-shadow);}
   /* tile border always drawn above the assets so the grid stays readable */
   .cell.ov::after{content:''; position:absolute; inset:0; border-radius:inherit; z-index:2; pointer-events:none;
-    box-shadow:inset 0 0 0 1.5px rgba(8,20,17,.72);}
+    box-shadow:inset 0 0 0 1.5px rgba(8,20,17,.72), var(--ks-frontier-shadow);}
   /* Caldera: subtle raised (hidden) vs sunken (cleared) depth on the stone tiles for readability */
   .lv-volcano .cell.art.hidden:not(.boss):not(.mine-art){box-shadow:inset 0 2px 0 rgba(255,255,255,.08), inset 0 -3px 6px rgba(0,0,0,.3) !important;}
   .lv-volcano .cell.art.open:not(.boss):not(.mine-art){box-shadow:inset 0 3px 7px rgba(0,0,0,.5) !important;}
@@ -1178,7 +1199,7 @@ const DEFAULT_P={
   const START_FIRE=1, START_SWORD=2, MAX_GEN_ATTEMPTS=900, MAX_COMPONENT=20;
   const SWORD_LEN=5, ATTACK_EVERY=10, SCRAMBLE_P=0.34, SCRAMBLE_TRIES=80, WARD_AREA=16;
   let water=new Set(), bridge=new Set(), stoneCells=new Set(), charCells=new Set(), custCells=new Map(), curTexSrc={};
-  const OV_OP_HIDDEN=1, OV_OP_CLEARED=0.62, OV_OP_EDGE=0.05, OV_OP_EDGE2=0.30;
+  const OV_OP_HIDDEN=1, OV_OP_CLEARED=0.22, OV_OP_EDGE=0.22, OV_OP_EDGE2=0.22;   // Emilie's Art Tuner pass, 2026-08-31
   // Overlay (the big painted scene) is its own layer and is graded separately from the tile
   // art underneath. FOUR strengths: full on unopened ground; STRONGER than the tile dim on
   // cleared interior, so a swept board shows the picture; near-invisible on cleared tiles
@@ -1296,7 +1317,7 @@ const DEFAULT_P={
   // fresh design from her; the goal it served — claimed/unclaimed clarity while keeping the
   // art visible on cleared ground — is still open.)
   // Moderate dim: cleared ground stays clearly darker than hidden, but the art survives.
-  const CLEAR_DIM={ratio:0.36,contrast:1.25,saturate:0.5,floor:0.025};
+  const CLEAR_DIM={ratio:0.18,contrast:1.37,saturate:0.5,floor:0.025};   // Emilie's Art Tuner pass, 2026-08-31
   const _lum=(r,g,b)=>0.2126*r+0.7152*g+0.0722*b;
   const _cl=v=>v<0?0:v>1?1:v;
   function _hex2rgb(h){h=h.replace('#','');return [parseInt(h.slice(0,2),16)/255,parseInt(h.slice(2,4),16)/255,parseInt(h.slice(4,6),16)/255];}
@@ -2366,12 +2387,22 @@ const DEFAULT_P={
       // (rings 1 AND 2), so the full band level goes into the signature for revealed cells.
       const ring=revealed[i]?(rings.n1[i]?1:rings.n2[i]?2:0):0, bhBit=ring===1?1:0;
       const gRole=gRoles.get(i)||0, slBit=slain.has(i)?1:0;
-      const sg=((((((((adj[i]*2+(revealed[i]?1:0))*2+(flagged[i]?1:0))*2+(fog[i]?1:0))*2+(warded[i]?1:0))*2+(mines[i]?1:0))*2+bossBit)*3+ring)*2+slBit)*9+gRole;
+      // frontier bits: for a revealed non-terrain cell, which ORTHOGONAL sides face unopened
+      // non-terrain ground (the cleared/uncleared seam the CSS draws). In the signature, so a
+      // cell redraws the moment a side's neighbour opens — same contract as the ring bands.
+      let fT=0,fR=0,fB=0,fL=0;
+      if(revealed[i]&&!water.has(i)){
+        const hid=(rr,cc)=>{if(rr<0||rr>=ROWS||cc<0||cc>=COLS)return false;const j=idx(rr,cc);return !revealed[j]&&!water.has(j);};
+        fT=hid(r-1,c)?1:0;fB=hid(r+1,c)?1:0;fL=hid(r,c-1)?1:0;fR=hid(r,c+1)?1:0;}
+      const fBits=fT*8+fR*4+fB*2+fL;
+      const sg=(((((((((adj[i]*2+(revealed[i]?1:0))*2+(flagged[i]?1:0))*2+(fog[i]?1:0))*2+(warded[i]?1:0))*2+(mines[i]?1:0))*2+bossBit)*3+ring)*2+slBit)*9+gRole)*16+fBits;
       if(sg===renderSig[i])continue;
       renderSig[i]=sg; dirty.push(i);
-      el.className='cell '+region; el.textContent='';
+      el.className='cell '+region+(fBits?' frontier':''); el.textContent='';
+      if(fBits){el.style.setProperty('--fT',fT);el.style.setProperty('--fR',fR);el.style.setProperty('--fB',fB);el.style.setProperty('--fL',fL);}
+      else{el.style.removeProperty('--fT');el.style.removeProperty('--fR');el.style.removeProperty('--fB');el.style.removeProperty('--fL');}
       if(ART()){
-        el.className='cell '+(revealed[i]?'open':'hidden');
+        el.className='cell '+(revealed[i]?'open':'hidden')+(fBits?' frontier':'');
         el.style.backgroundImage='';el.style.backgroundSize='';el.style.backgroundPosition='';el.style.backgroundRepeat='';
         const ovi=effectiveOverlay(currentLevel);
         if(ovi && (currentLevel.overlayFull || (!water.has(i) && !bridge.has(i)))){const step=CELLPX+3, gw=COLS*step-3, gh=ROWS*step-3;
